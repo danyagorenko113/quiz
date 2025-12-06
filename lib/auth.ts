@@ -1,5 +1,5 @@
-import NextAuth from "next-auth"
-import Spotify from "next-auth/providers/spotify"
+import type { NextAuthOptions } from "next-auth"
+import SpotifyProvider from "next-auth/providers/spotify"
 
 const scopes = [
   "user-read-email",
@@ -10,9 +10,9 @@ const scopes = [
   "user-modify-playback-state",
 ].join(" ")
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
-    Spotify({
+    SpotifyProvider({
       clientId: process.env.AUTH_SPOTIFY_ID!,
       clientSecret: process.env.AUTH_SPOTIFY_SECRET!,
       authorization: `https://accounts.spotify.com/authorize?scope=${scopes}`,
@@ -31,4 +31,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
   },
-})
+}
