@@ -23,17 +23,38 @@ export default function JoinPage() {
       return
     }
 
-    const partyData = localStorage.getItem(`party_${partyCode.toUpperCase()}`)
-    if (!partyData) {
+    const code = partyCode.toUpperCase()
+    const partyDataStr = localStorage.getItem(`party_${code}`)
+
+    if (!partyDataStr) {
       setError("Party not found. Check the code and try again.")
       return
     }
 
+    const partyData = JSON.parse(partyDataStr)
+
+    if (partyData.players && partyData.players.length >= partyData.maxPlayers - 1) {
+      setError("Party is full (max 5 players)")
+      return
+    }
+
+    if (partyData.players && partyData.players.includes(playerName)) {
+      setError("Name already taken. Please choose another name.")
+      return
+    }
+
+    if (!partyData.players) {
+      partyData.players = []
+    }
+    partyData.players.push(playerName)
+    localStorage.setItem(`party_${code}`, JSON.stringify(partyData))
+
     // Store player info
     localStorage.setItem("playerName", playerName)
+    localStorage.setItem("currentParty", code)
 
-    // Redirect to quiz
-    router.push(`/quiz/${partyCode.toUpperCase()}`)
+    // Redirect to quiz (waiting room)
+    router.push(`/quiz/${code}`)
   }
 
   return (
