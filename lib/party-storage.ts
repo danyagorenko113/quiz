@@ -21,7 +21,12 @@ const globalForParties = globalThis as unknown as {
 
 export const parties = globalForParties.parties ?? new Map<string, Party>()
 
+// Log current state on module load
+console.log("[v0] Party storage initialized. Current parties:", Array.from(parties.keys()))
+
 if (process.env.NODE_ENV !== "production") {
+  globalForParties.parties = parties
+} else {
   globalForParties.parties = parties
 }
 
@@ -33,11 +38,30 @@ export function createParty(data: Omit<Party, "createdAt" | "players" | "status"
     status: "waiting",
   }
   parties.set(data.code, party)
+  console.log(
+    "[v0] Party created:",
+    data.code,
+    "Total parties:",
+    parties.size,
+    "All codes:",
+    Array.from(parties.keys()),
+  )
   return party
 }
 
 export function getParty(code: string) {
-  return parties.get(code)
+  const party = parties.get(code)
+  console.log(
+    "[v0] Get party:",
+    code,
+    "Found:",
+    !!party,
+    "Total parties:",
+    parties.size,
+    "All codes:",
+    Array.from(parties.keys()),
+  )
+  return party
 }
 
 export function updateParty(code: string, updates: Partial<Party>) {
