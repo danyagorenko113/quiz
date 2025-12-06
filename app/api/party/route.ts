@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createParty, getParty, updateParty } from "@/lib/party-storage"
+import { createParty, getParty, updateParty, parties } from "@/lib/party-storage"
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get("code")
 
-  console.log("[v0] Fetching party with code:", code)
+  console.log("[v0] GET /api/party - Fetching party with code:", code)
+  console.log("[v0] Request URL:", request.url)
+  console.log("[v0] Search params:", Object.fromEntries(searchParams))
 
   if (!code) {
     return NextResponse.json({ error: "Party code required" }, { status: 400 })
@@ -38,11 +40,12 @@ export async function GET(request: NextRequest) {
   const party = getParty(code)
 
   if (!party) {
-    console.log("[v0] Party not found:", code)
+    console.log("[v0] Party not found for code:", code)
+    console.log("[v0] Available parties:", Array.from(parties.keys()))
     return NextResponse.json({ error: "Party not found" }, { status: 404 })
   }
 
-  console.log("[v0] Party found:", party)
+  console.log("[v0] Party found successfully:", party)
 
   return NextResponse.json({ party })
 }
