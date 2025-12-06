@@ -29,40 +29,36 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const [isWaiting, setIsWaiting] = useState(true)
 
   useEffect(() => {
-    const data = localStorage.getItem(`party_${partyCode}`)
-    const storedPlayerName = localStorage.getItem("playerName")
+    const fetchPartyData = async () => {
+      try {
+        const response = await fetch(`/api/party?code=${partyCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          const party = data.party
+          setPartyData(party)
 
+          if (party.status === "playing") {
+            setIsWaiting(false)
+            if (session?.accessToken) {
+              fetchPlaylistTracks(party.playlistId, session.accessToken)
+            }
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching party:", error)
+      }
+      setLoading(false)
+    }
+
+    const storedPlayerName = localStorage.getItem("playerName")
     if (storedPlayerName) {
       setPlayerName(storedPlayerName)
     }
 
-    if (data) {
-      const party = JSON.parse(data)
-      setPartyData(party)
+    fetchPartyData()
 
-      if (party.status === "playing") {
-        setIsWaiting(false)
-
-        if (session?.accessToken) {
-          fetchPlaylistTracks(party.playlistId, session.accessToken)
-        }
-      }
-    }
-    setLoading(false)
-
-    const interval = setInterval(() => {
-      const currentData = localStorage.getItem(`party_${partyCode}`)
-      if (currentData) {
-        const currentParty = JSON.parse(currentData)
-        if (currentParty.status === "playing" && isWaiting) {
-          setIsWaiting(false)
-          if (session?.accessToken) {
-            fetchPlaylistTracks(currentParty.playlistId, session.accessToken)
-          }
-        }
-        setPartyData(currentParty)
-      }
-    }, 1000)
+    // Poll for updates
+    const interval = setInterval(fetchPartyData, 1000)
 
     return () => clearInterval(interval)
   }, [partyCode, session, isWaiting])
