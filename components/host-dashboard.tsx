@@ -159,7 +159,7 @@ export function HostDashboard({ session }: { session: Session }) {
 }
 
 function PartyLobby({ partyCode, session }: { partyCode: string; session: Session }) {
-  const [players, setPlayers] = useState<string[]>([])
+  const [players, setPlayers] = useState<Array<{ name: string }>>([])
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -251,10 +251,10 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
                   className="flex items-center gap-3 p-3 bg-muted rounded-lg animate-in fade-in slide-in-from-left"
                 >
                   <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
-                    {player[0]?.toUpperCase() || "P"}
+                    {player.name[0]?.toUpperCase() || "P"}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold">{player}</p>
+                    <p className="font-semibold">{player.name}</p>
                     <p className="text-xs text-muted-foreground">Player</p>
                   </div>
                 </div>
