@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createParty, getParty, updateParty, parties } from "@/lib/party-storage"
+import { createParty, getParty, updateParty } from "@/lib/redis"
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,15 +8,18 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Creating party:", { code, playlistId, host })
 
-    const party = createParty({
+    const party = await createParty({
       code,
+      hostId: hostEmail || host,
       playlistId,
-      host,
-      hostEmail,
-      maxPlayers: maxPlayers || 5,
+      playlistName: "",
+      players: [],
+      status: "waiting",
+      tracks: [],
+      currentTrack: 0,
     })
 
-    console.log("[v0] Party created successfully:", party)
+    console.log("[v0] Party created successfully in Redis:", party)
 
     return NextResponse.json({ success: true, party })
   } catch (error) {
@@ -30,18 +33,15 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code")
 
   console.log("[v0] GET /api/party - Fetching party with code:", code)
-  console.log("[v0] Request URL:", request.url)
-  console.log("[v0] Search params:", Object.fromEntries(searchParams))
 
   if (!code) {
     return NextResponse.json({ error: "Party code required" }, { status: 400 })
   }
 
-  const party = getParty(code)
+  const party = await getParty(code)
 
   if (!party) {
-    console.log("[v0] Party not found for code:", code)
-    console.log("[v0] Available parties:", Array.from(parties.keys()))
+    console.log("[v0] Party not found in Redis for code:", code)
     return NextResponse.json({ error: "Party not found" }, { status: 404 })
   }
 
@@ -57,13 +57,15 @@ export async function PUT(request: NextRequest) {
 
     console.log("[v0] Updating party:", { code, updates })
 
-    const updatedParty = updateParty(code, updates)
+    const existingParty = await getParty(code)
 
-    if (!updatedParty) {
+    if (!existingParty) {
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
 
-    console.log("[v0] Party updated:", updatedParty)
+    const updatedParty = await updateParty(code, { ...existingParty, ...updates })
+
+    console.log("[v0] Party updated in Redis:", updatedParty)
 
     return NextResponse.json({ success: true, party: updatedParty })
   } catch (error) {
