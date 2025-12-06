@@ -191,18 +191,22 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
 
   const startQuiz = async () => {
     try {
-      await fetch("/api/party", {
-        method: "PUT",
+      const response = await fetch("/api/party/start", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: partyCode,
-          status: "playing",
-        }),
+        body: JSON.stringify({ code: partyCode }),
       })
 
-      window.location.href = `/quiz/${partyCode}`
+      if (response.ok) {
+        window.location.href = `/quiz/${partyCode}`
+      } else {
+        const error = await response.json()
+        console.error("[v0] Failed to start quiz:", error)
+        alert("Failed to start quiz. Please try again.")
+      }
     } catch (error) {
       console.error("[v0] Error starting quiz:", error)
+      alert("Failed to start quiz. Please try again.")
     }
   }
 
