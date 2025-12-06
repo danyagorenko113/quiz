@@ -18,6 +18,8 @@ export function HostDashboard({ session }: { session: Session }) {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
+  const [partyCode, setPartyCode] = useState<string | null>(null)
+  const [showLobby, setShowLobby] = useState(false)
 
   useEffect(() => {
     async function fetchPlaylists() {
@@ -42,22 +44,26 @@ export function HostDashboard({ session }: { session: Session }) {
   const handleStartParty = () => {
     if (!selectedPlaylist) return
 
-    // Generate random party code
-    const partyCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase()
 
-    // Store party data in localStorage
     const partyData = {
-      code: partyCode,
+      code: code,
       playlistId: selectedPlaylist,
       host: session.user?.name,
+      hostEmail: session.user?.email,
       createdAt: Date.now(),
+      players: [],
+      status: "waiting", // waiting, playing, finished
+      maxPlayers: 5,
     }
 
-    localStorage.setItem(`party_${partyCode}`, JSON.stringify(partyData))
-    localStorage.setItem("currentParty", partyCode)
+    localStorage.setItem(`party_${code}`, JSON.stringify(partyData))
+    setPartyCode(code)
+    setShowLobby(true)
+  }
 
-    // Redirect to quiz
-    window.location.href = `/quiz/${partyCode}`
+  if (showLobby && partyCode) {
+    return <PartyLobby partyCode={partyCode} session={session} />
   }
 
   return (
@@ -137,6 +143,128 @@ export function HostDashboard({ session }: { session: Session }) {
                 Start Quiz Party
               </Button>
             </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+function PartyLobby({ partyCode, session }: { partyCode: string; session: Session }) {
+  const [players, setPlayers] = useState<string[]>([])
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const data = localStorage.getItem(`party_${partyCode}`)
+      if (data) {
+        const party = JSON.parse(data)
+        setPlayers(party.players || [])
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [partyCode])
+
+  const copyInviteCode = () => {
+    navigator.clipboard.writeText(partyCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const startQuiz = () => {
+    const data = localStorage.getItem(`party_${partyCode}`)
+    if (data) {
+      const party = JSON.parse(data)
+      party.status = "playing"
+      localStorage.setItem(`party_${partyCode}`, JSON.stringify(party))
+    }
+
+    window.location.href = `/quiz/${partyCode}`
+  }
+
+  const canStart = players.length >= 1
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
+      <div className="max-w-2xl mx-auto py-8">
+        <Card className="p-8 bg-background/95 backdrop-blur">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4">
+              <Users className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold mb-2">Party Lobby</h1>
+            <p className="text-muted-foreground">Share the code with your friends</p>
+          </div>
+
+          <div className="bg-muted rounded-lg p-6 mb-6 text-center">
+            <p className="text-sm text-muted-foreground mb-2">Party Code</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-5xl font-bold tracking-wider">{partyCode}</p>
+              <Button onClick={copyInviteCode} size="sm" variant="outline" className="bg-transparent">
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Players join at: {window.location.origin}/join</p>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Players ({players.length + 1}/5)
+              </h2>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border-2 border-emerald-500">
+                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
+                  {session.user?.name?.[0]?.toUpperCase() || "H"}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{session.user?.name}</p>
+                  <p className="text-xs text-muted-foreground">Host</p>
+                </div>
+              </div>
+
+              {players.map((player, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-muted rounded-lg animate-in fade-in slide-in-from-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
+                    {player[0]?.toUpperCase() || "P"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{player}</p>
+                    <p className="text-xs text-muted-foreground">Player</p>
+                  </div>
+                </div>
+              ))}
+
+              {players.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Waiting for players to join...</p>
+                  <p className="text-sm mt-2">Minimum 2 players (including host) required</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Button
+            onClick={startQuiz}
+            disabled={!canStart}
+            size="lg"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            {canStart ? "Start Quiz" : `Need ${1 - players.length} more player${players.length === 0 ? "s" : ""}`}
+          </Button>
+
+          {!canStart && (
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              At least 1 other player must join before starting
+            </p>
           )}
         </Card>
       </div>
