@@ -1,28 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
-
-// In-memory storage (will reset on deployment, but works for demo)
-const parties = new Map<string, any>()
+import { createParty, getParty, updateParty } from "@/lib/party-storage"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { code, playlistId, host, hostEmail, maxPlayers } = body
 
-    const partyData = {
+    console.log("[v0] Creating party:", { code, playlistId, host })
+
+    const party = createParty({
       code,
       playlistId,
       host,
       hostEmail,
-      createdAt: Date.now(),
-      players: [],
-      status: "waiting",
       maxPlayers: maxPlayers || 5,
-    }
+    })
 
-    parties.set(code, partyData)
+    console.log("[v0] Party created successfully:", party)
 
-    return NextResponse.json({ success: true, party: partyData })
+    return NextResponse.json({ success: true, party })
   } catch (error) {
+    console.error("[v0] Error creating party:", error)
     return NextResponse.json({ error: "Failed to create party" }, { status: 500 })
   }
 }
@@ -31,15 +29,20 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get("code")
 
+  console.log("[v0] Fetching party with code:", code)
+
   if (!code) {
     return NextResponse.json({ error: "Party code required" }, { status: 400 })
   }
 
-  const party = parties.get(code)
+  const party = getParty(code)
 
   if (!party) {
+    console.log("[v0] Party not found:", code)
     return NextResponse.json({ error: "Party not found" }, { status: 404 })
   }
+
+  console.log("[v0] Party found:", party)
 
   return NextResponse.json({ party })
 }
@@ -49,17 +52,19 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { code, ...updates } = body
 
-    const party = parties.get(code)
+    console.log("[v0] Updating party:", { code, updates })
 
-    if (!party) {
+    const updatedParty = updateParty(code, updates)
+
+    if (!updatedParty) {
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
 
-    const updatedParty = { ...party, ...updates }
-    parties.set(code, updatedParty)
+    console.log("[v0] Party updated:", updatedParty)
 
     return NextResponse.json({ success: true, party: updatedParty })
   } catch (error) {
+    console.error("[v0] Error updating party:", error)
     return NextResponse.json({ error: "Failed to update party" }, { status: 500 })
   }
 }
