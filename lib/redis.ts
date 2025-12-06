@@ -7,13 +7,16 @@ export const redis = new Redis({
 
 export interface Party {
   code: string
+  host?: string
   hostId: string
+  hostEmail?: string
   playlistId: string
   playlistName: string
-  players: Player[]
+  players: (string | Player)[]
   status: "waiting" | "playing" | "finished"
   tracks: Track[]
   currentTrack: number
+  maxPlayers?: number
 }
 
 export interface Player {
