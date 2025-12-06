@@ -10,13 +10,16 @@ export async function POST(request: NextRequest) {
 
     const party = await createParty({
       code,
+      host,
       hostId: hostEmail || host,
+      hostEmail,
       playlistId,
       playlistName: "",
       players: [],
       status: "waiting",
       tracks: [],
       currentTrack: 0,
+      maxPlayers: maxPlayers || 5,
     })
 
     console.log("[v0] Party created successfully in Redis:", party)
