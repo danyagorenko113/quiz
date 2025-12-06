@@ -13,7 +13,7 @@ export default function JoinPage() {
   const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!partyCode.trim()) {
       setError("Please enter a party code")
       return
@@ -24,37 +24,34 @@ export default function JoinPage() {
     }
 
     const code = partyCode.toUpperCase()
-    const partyDataStr = localStorage.getItem(`party_${code}`)
 
-    if (!partyDataStr) {
-      setError("Party not found. Check the code and try again.")
-      return
+    try {
+      const response = await fetch("/api/party/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          playerName,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Failed to join party")
+        return
+      }
+
+      // Store player info locally
+      localStorage.setItem("playerName", playerName)
+      localStorage.setItem("currentParty", code)
+
+      // Redirect to quiz (waiting room)
+      router.push(`/quiz/${code}`)
+    } catch (error) {
+      console.error("[v0] Error joining party:", error)
+      setError("Failed to join party. Please try again.")
     }
-
-    const partyData = JSON.parse(partyDataStr)
-
-    if (partyData.players && partyData.players.length >= partyData.maxPlayers - 1) {
-      setError("Party is full (max 5 players)")
-      return
-    }
-
-    if (partyData.players && partyData.players.includes(playerName)) {
-      setError("Name already taken. Please choose another name.")
-      return
-    }
-
-    if (!partyData.players) {
-      partyData.players = []
-    }
-    partyData.players.push(playerName)
-    localStorage.setItem(`party_${code}`, JSON.stringify(partyData))
-
-    // Store player info
-    localStorage.setItem("playerName", playerName)
-    localStorage.setItem("currentParty", code)
-
-    // Redirect to quiz (waiting room)
-    router.push(`/quiz/${code}`)
   }
 
   return (
