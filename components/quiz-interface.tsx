@@ -5,25 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Music, Play, Pause, Users, Trophy } from "lucide-react"
-import { useSession } from "next-auth/react"
 
 interface Track {
   id: string
   name: string
-  artists: { name: string }[]
-  preview_url: string | null
+  artists: string[]
+  previewUrl: string | null
 }
 
 export function QuizInterface({ partyCode }: { partyCode: string }) {
-  const { data: session } = useSession()
   const [partyData, setPartyData] = useState<any>(null)
-  const [tracks, setTracks] = useState<Track[]>([])
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [guess, setGuess] = useState("")
   const [score, setScore] = useState(0)
   const [hasGuessed, setHasGuessed] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [answer, setAnswer] = useState<any>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playerName, setPlayerName] = useState<string>("")
   const [isWaiting, setIsWaiting] = useState(true)
@@ -31,21 +29,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   useEffect(() => {
     const fetchPartyData = async () => {
       try {
-        console.log("[v0] Fetching party data for code:", partyCode)
         const response = await fetch(`/api/party?code=${partyCode}`)
-        console.log("[v0] Party fetch response status:", response.status)
 
         if (response.ok) {
           const data = await response.json()
-          console.log("[v0] Party data received:", data)
           const party = data.party
           setPartyData(party)
 
           if (party.status === "playing") {
             setIsWaiting(false)
           }
-        } else {
-          console.error("[v0] Party not found, response:", await response.text())
         }
       } catch (error) {
         console.error("[v0] Error fetching party:", error)
@@ -60,45 +53,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
     fetchPartyData()
 
-    // Poll for updates
+    // Poll for updates every 2 seconds
     const interval = setInterval(fetchPartyData, 2000)
 
     return () => clearInterval(interval)
   }, [partyCode])
 
-  useEffect(() => {
-    if (partyData?.status === "playing" && session?.accessToken && tracks.length === 0) {
-      fetchPlaylistTracks(partyData.playlistId, session.accessToken)
-    }
-  }, [partyData?.status, session?.accessToken])
-
-  const fetchPlaylistTracks = async (playlistId: string, token: string) => {
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-
-      const validTracks = data.items
-        .map((item: any) => item.track)
-        .filter((track: Track) => track.preview_url)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 10)
-
-      setTracks(validTracks)
-    } catch (error) {
-      console.error("[v0] Error fetching tracks:", error)
-    }
-  }
-
   const playTrack = () => {
-    if (audioRef.current && tracks[currentTrackIndex]) {
-      audioRef.current.src = tracks[currentTrackIndex].preview_url!
+    if (audioRef.current && partyData?.tracks[currentTrackIndex]) {
+      const track = partyData.tracks[currentTrackIndex]
+      audioRef.current.src = track.previewUrl
       audioRef.current.play()
       setIsPlaying(true)
 
+      // Stop after 10 seconds
       setTimeout(() => {
         if (audioRef.current) {
           audioRef.current.pause()
@@ -115,37 +83,43 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
-  const submitGuess = () => {
-    if (!tracks[currentTrackIndex]) return
+  const submitGuess = async () => {
+    if (!guess.trim()) return
 
-    const currentTrack = tracks[currentTrackIndex]
-    const correctAnswer = `${currentTrack.name} - ${currentTrack.artists[0].name}`.toLowerCase()
-    const userGuess = guess.toLowerCase()
+    try {
+      const response = await fetch("/api/party/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: partyCode,
+          playerName,
+          guess,
+          trackIndex: currentTrackIndex,
+        }),
+      })
 
-    const isCorrect =
-      correctAnswer.includes(userGuess) ||
-      userGuess.includes(currentTrack.name.toLowerCase()) ||
-      userGuess.includes(currentTrack.artists[0].name.toLowerCase())
+      const data = await response.json()
 
-    if (isCorrect) {
-      setScore(score + 1)
+      if (data.correct) {
+        setScore(score + 1)
+      }
+
+      setAnswer(data.answer)
+      setHasGuessed(true)
+      pauseTrack()
+    } catch (error) {
+      console.error("[v0] Error submitting guess:", error)
     }
-
-    setHasGuessed(true)
-    pauseTrack()
   }
 
   const nextTrack = () => {
+    const tracks = partyData?.tracks || []
     if (currentTrackIndex < tracks.length - 1) {
       setCurrentTrackIndex(currentTrackIndex + 1)
       setGuess("")
       setHasGuessed(false)
+      setAnswer(null)
     }
-  }
-
-  const copyInviteLink = () => {
-    const url = `${window.location.origin}/join`
-    navigator.clipboard.writeText(`Join my Spotify Quiz! Code: ${partyCode}\n${url}`)
   }
 
   if (loading) {
@@ -219,7 +193,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     )
   }
 
-  if (tracks.length === 0 && session?.accessToken) {
+  const tracks = partyData?.tracks || []
+
+  if (tracks.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center">
         <p className="text-white text-xl">Loading tracks...</p>
@@ -303,10 +279,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Your Guess</label>
+                <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
                 <Input
                   type="text"
-                  placeholder="Song name or artist..."
+                  placeholder="e.g., Taylor Swift - Shake It Off"
                   value={guess}
                   onChange={(e) => setGuess(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && submitGuess()}
@@ -327,8 +303,8 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
             <div className="space-y-6 text-center">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground mb-2">Correct Answer</p>
-                <p className="text-xl font-bold">{currentTrack.name}</p>
-                <p className="text-lg text-muted-foreground">by {currentTrack.artists.map((a) => a.name).join(", ")}</p>
+                <p className="text-xl font-bold">{answer?.name}</p>
+                <p className="text-lg text-muted-foreground">by {answer?.artists.join(", ")}</p>
               </div>
 
               <Button onClick={nextTrack} size="lg" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
