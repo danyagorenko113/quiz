@@ -1,4 +1,6 @@
-import { signIn } from "@/lib/auth"
+"use client"
+
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Music } from "lucide-react"
@@ -19,17 +21,13 @@ export function LoginScreen() {
             </p>
           </div>
 
-          <form
-            action={async () => {
-              "use server"
-              await signIn("spotify", { redirectTo: "/host" })
-            }}
-            className="w-full"
+          <Button
+            onClick={() => signIn("spotify", { callbackUrl: "/host" })}
+            size="lg"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            <Button type="submit" size="lg" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-              Login with Spotify
-            </Button>
-          </form>
+            Login with Spotify
+          </Button>
 
           <p className="text-sm text-muted-foreground">Create a party or join with an invite code</p>
         </div>
