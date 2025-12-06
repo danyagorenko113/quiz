@@ -41,25 +41,33 @@ export function HostDashboard({ session }: { session: Session }) {
     fetchPlaylists()
   }, [session.accessToken])
 
-  const handleStartParty = () => {
+  const handleStartParty = async () => {
     if (!selectedPlaylist) return
 
     const code = Math.random().toString(36).substring(2, 8).toUpperCase()
 
-    const partyData = {
-      code: code,
-      playlistId: selectedPlaylist,
-      host: session.user?.name,
-      hostEmail: session.user?.email,
-      createdAt: Date.now(),
-      players: [],
-      status: "waiting", // waiting, playing, finished
-      maxPlayers: 5,
-    }
+    try {
+      const response = await fetch("/api/party", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          playlistId: selectedPlaylist,
+          host: session.user?.name,
+          hostEmail: session.user?.email,
+          maxPlayers: 5,
+        }),
+      })
 
-    localStorage.setItem(`party_${code}`, JSON.stringify(partyData))
-    setPartyCode(code)
-    setShowLobby(true)
+      if (response.ok) {
+        setPartyCode(code)
+        setShowLobby(true)
+      } else {
+        console.error("[v0] Failed to create party")
+      }
+    } catch (error) {
+      console.error("[v0] Error creating party:", error)
+    }
   }
 
   if (showLobby && partyCode) {
@@ -155,11 +163,15 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const data = localStorage.getItem(`party_${partyCode}`)
-      if (data) {
-        const party = JSON.parse(data)
-        setPlayers(party.players || [])
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/party?code=${partyCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPlayers(data.party.players || [])
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching party:", error)
       }
     }, 1000)
 
@@ -172,15 +184,21 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const startQuiz = () => {
-    const data = localStorage.getItem(`party_${partyCode}`)
-    if (data) {
-      const party = JSON.parse(data)
-      party.status = "playing"
-      localStorage.setItem(`party_${partyCode}`, JSON.stringify(party))
-    }
+  const startQuiz = async () => {
+    try {
+      await fetch("/api/party", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: partyCode,
+          status: "playing",
+        }),
+      })
 
-    window.location.href = `/quiz/${partyCode}`
+      window.location.href = `/quiz/${partyCode}`
+    } catch (error) {
+      console.error("[v0] Error starting quiz:", error)
+    }
   }
 
   const canStart = players.length >= 1
