@@ -159,16 +159,21 @@ export function HostDashboard({ session }: { session: Session }) {
 }
 
 function PartyLobby({ partyCode, session }: { partyCode: string; session: Session }) {
-  const [players, setPlayers] = useState<Array<{ name: string }>>([])
+  const [players, setPlayers] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
+        console.log("[v0] Polling party data for code:", partyCode)
         const response = await fetch(`/api/party?code=${partyCode}`)
         if (response.ok) {
           const data = await response.json()
-          setPlayers(data.party.players || [])
+          console.log("[v0] Party data received:", data.party)
+          const playerList = data.party.players || []
+          setPlayers(playerList)
+        } else {
+          console.error("[v0] Failed to fetch party:", response.status)
         }
       } catch (error) {
         console.error("[v0] Error fetching party:", error)
@@ -245,20 +250,23 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
                 </div>
               </div>
 
-              {players.map((player, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 bg-muted rounded-lg animate-in fade-in slide-in-from-left"
-                >
-                  <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
-                    {player.name[0]?.toUpperCase() || "P"}
+              {players.map((player, index) => {
+                const playerName = typeof player === "string" ? player : (player as any).name || "Player"
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-3 bg-muted rounded-lg animate-in fade-in slide-in-from-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
+                      {playerName[0]?.toUpperCase() || "P"}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{playerName}</p>
+                      <p className="text-xs text-muted-foreground">Player</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold">{player.name}</p>
-                    <p className="text-xs text-muted-foreground">Player</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
 
               {players.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
