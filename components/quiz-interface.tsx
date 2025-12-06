@@ -31,18 +31,21 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   useEffect(() => {
     const fetchPartyData = async () => {
       try {
+        console.log("[v0] Fetching party data for code:", partyCode)
         const response = await fetch(`/api/party?code=${partyCode}`)
+        console.log("[v0] Party fetch response status:", response.status)
+
         if (response.ok) {
           const data = await response.json()
+          console.log("[v0] Party data received:", data)
           const party = data.party
           setPartyData(party)
 
           if (party.status === "playing") {
             setIsWaiting(false)
-            if (session?.accessToken) {
-              fetchPlaylistTracks(party.playlistId, session.accessToken)
-            }
           }
+        } else {
+          console.error("[v0] Party not found, response:", await response.text())
         }
       } catch (error) {
         console.error("[v0] Error fetching party:", error)
@@ -58,10 +61,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     fetchPartyData()
 
     // Poll for updates
-    const interval = setInterval(fetchPartyData, 1000)
+    const interval = setInterval(fetchPartyData, 2000)
 
     return () => clearInterval(interval)
-  }, [partyCode, session, isWaiting])
+  }, [partyCode])
+
+  useEffect(() => {
+    if (partyData?.status === "playing" && session?.accessToken && tracks.length === 0) {
+      fetchPlaylistTracks(partyData.playlistId, session.accessToken)
+    }
+  }, [partyData?.status, session?.accessToken])
 
   const fetchPlaylistTracks = async (playlistId: string, token: string) => {
     try {
@@ -185,17 +194,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                     </div>
                   </div>
 
-                  {partyData.players?.map((player: string, index: number) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
-                        {player[0]?.toUpperCase()}
+                  {partyData.players?.map((player: string | { name: string }, index: number) => {
+                    const playerName = typeof player === "string" ? player : player.name
+                    return (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
+                          {playerName[0]?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold">{playerName}</p>
+                          <p className="text-xs text-muted-foreground">Player</p>
+                        </div>
                       </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold">{player}</p>
-                        <p className="text-xs text-muted-foreground">Player</p>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
