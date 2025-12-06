@@ -15,23 +15,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
 
-    if (party.players.length >= 4) {
-      // 4 players + 1 host = 5 total
+    if (party.players.length >= (party.maxPlayers || 5) - 1) {
       return NextResponse.json({ error: "Party is full" }, { status: 400 })
     }
 
-    const nameExists = party.players.some((p) => p.name === playerName)
+    const nameExists = party.players.some((p) => {
+      if (typeof p === "string") return p === playerName
+      return p.name === playerName
+    })
+
     if (nameExists) {
       return NextResponse.json({ error: "Name already taken" }, { status: 400 })
     }
 
-    const newPlayer = {
-      id: `${Date.now()}-${Math.random()}`,
-      name: playerName,
-      score: 0,
-    }
-
-    party.players.push(newPlayer)
+    party.players.push(playerName)
     const updatedParty = await updateParty(code, party)
 
     console.log("[v0] Player joined successfully, updated in Redis:", updatedParty)
