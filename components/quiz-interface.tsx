@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Music, Play, Pause, Users, Trophy } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 interface Track {
   id: string
   name: string
   artists: string[]
+  uri: string
   previewUrl: string | null
 }
 
 export function QuizInterface({ partyCode }: { partyCode: string }) {
+  const { data: session } = useSession()
   const [partyData, setPartyData] = useState<any>(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -25,6 +28,46 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playerName, setPlayerName] = useState<string>("")
   const [isWaiting, setIsWaiting] = useState(true)
+  const [player, setPlayer] = useState<any>(null)
+  const [deviceId, setDeviceId] = useState<string | null>(null)
+  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (!session?.accessToken) return
+
+    const script = document.createElement("script")
+    script.src = "https://sdk.scdn.co/spotify-player.js"
+    script.async = true
+    document.body.appendChild(script)
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const spotifyPlayer = new window.Spotify.Player({
+        name: "Spotify Quiz Player",
+        getOAuthToken: (cb: (token: string) => void) => {
+          cb(session.accessToken as string)
+        },
+        volume: 0.5,
+      })
+
+      spotifyPlayer.addListener("ready", ({ device_id }: { device_id: string }) => {
+        console.log("[v0] Spotify player ready with device ID:", device_id)
+        setDeviceId(device_id)
+      })
+
+      spotifyPlayer.addListener("not_ready", ({ device_id }: { device_id: string }) => {
+        console.log("[v0] Device ID has gone offline", device_id)
+      })
+
+      spotifyPlayer.connect()
+      setPlayer(spotifyPlayer)
+    }
+
+    return () => {
+      if (player) {
+        player.disconnect()
+      }
+    }
+  }, [session])
 
   useEffect(() => {
     const fetchPartyData = async () => {
@@ -59,15 +102,48 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     return () => clearInterval(interval)
   }, [partyCode])
 
-  const playTrack = () => {
-    if (audioRef.current && partyData?.tracks[currentTrackIndex]) {
-      const track = partyData.tracks[currentTrackIndex]
+  const playTrack = async () => {
+    if (!partyData?.tracks[currentTrackIndex]) return
+
+    const track = partyData.tracks[currentTrackIndex]
+
+    // Try Spotify Web Playback SDK first (for host with session)
+    if (session?.accessToken && deviceId && track.uri) {
+      try {
+        const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: [track.uri],
+            position_ms: 0,
+          }),
+        })
+
+        if (response.ok || response.status === 204) {
+          setIsPlaying(true)
+
+          // Stop after 10 seconds
+          playbackTimerRef.current = setTimeout(() => {
+            pauseTrack()
+          }, 10000)
+          return
+        }
+      } catch (error) {
+        console.error("[v0] Error playing with Spotify SDK:", error)
+      }
+    }
+
+    // Fallback to preview URL if available
+    if (audioRef.current && track.previewUrl) {
       audioRef.current.src = track.previewUrl
       audioRef.current.play()
       setIsPlaying(true)
 
       // Stop after 10 seconds
-      setTimeout(() => {
+      playbackTimerRef.current = setTimeout(() => {
         if (audioRef.current) {
           audioRef.current.pause()
           setIsPlaying(false)
@@ -76,11 +152,30 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
-  const pauseTrack = () => {
+  const pauseTrack = async () => {
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current)
+      playbackTimerRef.current = null
+    }
+
+    if (session?.accessToken && deviceId) {
+      try {
+        await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        })
+      } catch (error) {
+        console.error("[v0] Error pausing Spotify player:", error)
+      }
+    }
+
     if (audioRef.current) {
       audioRef.current.pause()
-      setIsPlaying(false)
     }
+
+    setIsPlaying(false)
   }
 
   const submitGuess = async () => {
