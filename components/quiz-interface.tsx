@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Music, Play, Pause, Users, Trophy } from "lucide-react"
+import { Music, Play, Pause, Users, Trophy, CheckCircle, Clock } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 interface Track {
@@ -32,6 +32,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const [deviceId, setDeviceId] = useState<string | null>(null)
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [isHost, setIsHost] = useState(false)
+  const [answerSubmitted, setAnswerSubmitted] = useState(false)
 
   useEffect(() => {
     if (!session?.accessToken) return
@@ -87,6 +88,14 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           if (party.status === "playing") {
             setIsWaiting(false)
           }
+
+          if (!isHost && party.currentTrack !== undefined && party.currentTrack !== currentTrackIndex) {
+            setCurrentTrackIndex(party.currentTrack)
+            setGuess("")
+            setHasGuessed(false)
+            setAnswer(null)
+            setAnswerSubmitted(false)
+          }
         }
       } catch (error) {
         console.error("[v0] Error fetching party:", error)
@@ -101,7 +110,6 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
     fetchPartyData()
 
-    // Poll for updates every 2 seconds
     const interval = setInterval(fetchPartyData, 2000)
 
     return () => clearInterval(interval)
@@ -228,20 +236,48 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
       setAnswer(data.answer)
       setHasGuessed(true)
+      if (!isHost) {
+        setAnswerSubmitted(true)
+      }
       pauseTrack()
     } catch (error) {
       console.error("[v0] Error submitting guess:", error)
     }
   }
 
-  const nextTrack = () => {
-    const tracks = partyData?.tracks || []
-    if (currentTrackIndex < tracks.length - 1) {
-      setCurrentTrackIndex(currentTrackIndex + 1)
-      setGuess("")
-      setHasGuessed(false)
-      setAnswer(null)
+  const nextTrack = async () => {
+    if (!isHost) return
+
+    try {
+      await fetch("/api/party/next-track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: partyCode }),
+      })
+
+      const tracks = partyData?.tracks || []
+      if (currentTrackIndex < tracks.length - 1) {
+        setCurrentTrackIndex(currentTrackIndex + 1)
+        setGuess("")
+        setHasGuessed(false)
+        setAnswer(null)
+        setAnswerSubmitted(false)
+      }
+    } catch (error) {
+      console.error("[v0] Error advancing track:", error)
     }
+  }
+
+  const getPlayerList = () => {
+    const players: string[] = []
+    if (partyData?.host) players.push(partyData.host)
+    if (partyData?.players) {
+      partyData.players.forEach((p: string | { name: string }) => {
+        const name = typeof p === "string" ? p : p.name
+        if (name) players.push(name)
+      })
+    }
+    return players
   }
 
   if (loading) {
@@ -355,7 +391,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
-      <div className="max-w-2xl mx-auto py-8">
+      <div className="max-w-6xl mx-auto py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="text-white">
             <p className="text-sm opacity-80">Party Code</p>
@@ -369,86 +405,151 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           </div>
         </div>
 
-        <Card className="p-8 bg-background/95 backdrop-blur">
-          <div className="text-center mb-4">
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}
-            >
-              {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
-            </span>
-          </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card className="p-8 bg-background/95 backdrop-blur">
+              <div className="text-center mb-4">
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}
+                >
+                  {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
+                </span>
+              </div>
 
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Music className="w-4 h-4" />
-              Track {currentTrackIndex + 1} of {tracks.length}
-            </div>
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center mx-auto mb-6">
-              <Music className="w-16 h-16 text-white" />
-            </div>
-          </div>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <Music className="w-4 h-4" />
+                  Track {currentTrackIndex + 1} of {tracks.length}
+                </div>
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center mx-auto mb-6">
+                  <Music className="w-16 h-16 text-white" />
+                </div>
+              </div>
 
-          {!hasGuessed ? (
-            <div className="space-y-6">
-              <div className="flex justify-center gap-4">
-                {!isPlaying ? (
+              {!hasGuessed ? (
+                <div className="space-y-6">
+                  <div className="flex justify-center gap-4">
+                    {!isPlaying ? (
+                      <Button
+                        onClick={playTrack}
+                        size="lg"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                      >
+                        <Play className="w-5 h-5" />
+                        Play 10 Seconds
+                      </Button>
+                    ) : (
+                      <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
+                        <Pause className="w-5 h-5" />
+                        Pause
+                      </Button>
+                    )}
+                  </div>
+
+                  {!isHost && !currentTrack.previewUrl && (
+                    <p className="text-center text-sm text-muted-foreground">
+                      ⚠️ This track doesn't have a preview. Listen from the host's device!
+                    </p>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., Taylor Swift - Shake It Off"
+                      value={guess}
+                      onChange={(e) => setGuess(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && submitGuess()}
+                      className="text-lg"
+                    />
+                  </div>
+
                   <Button
-                    onClick={playTrack}
+                    onClick={submitGuess}
+                    disabled={!guess.trim()}
                     size="lg"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
-                    <Play className="w-5 h-5" />
-                    Play 10 Seconds
+                    Submit Guess
                   </Button>
-                ) : (
-                  <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
-                    <Pause className="w-5 h-5" />
-                    Pause
-                  </Button>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="space-y-6 text-center">
+                  {!isHost && answerSubmitted ? (
+                    <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
+                      <Clock className="w-12 h-12 text-blue-500 mx-auto mb-3 animate-pulse" />
+                      <p className="text-lg font-semibold mb-2">Answer Submitted!</p>
+                      <p className="text-sm text-muted-foreground">Waiting for host to play the next track...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="p-4 rounded-lg bg-muted">
+                        <p className="text-sm text-muted-foreground mb-2">Correct Answer</p>
+                        <p className="text-xl font-bold">{answer?.name}</p>
+                        <p className="text-lg text-muted-foreground">by {answer?.artists.join(", ")}</p>
+                      </div>
 
-              {!isHost && !currentTrack.previewUrl && (
-                <p className="text-center text-sm text-muted-foreground">
-                  ⚠️ This track doesn't have a preview. Listen from the host's device!
-                </p>
+                      {isHost && (
+                        <Button
+                          onClick={nextTrack}
+                          size="lg"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          Next Track
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
+            </Card>
+          </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
-                <Input
-                  type="text"
-                  placeholder="e.g., Taylor Swift - Shake It Off"
-                  value={guess}
-                  onChange={(e) => setGuess(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submitGuess()}
-                  className="text-lg"
-                />
-              </div>
-
-              <Button
-                onClick={submitGuess}
-                disabled={!guess.trim()}
-                size="lg"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                Submit Guess
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-6 text-center">
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="text-sm text-muted-foreground mb-2">Correct Answer</p>
-                <p className="text-xl font-bold">{answer?.name}</p>
-                <p className="text-lg text-muted-foreground">by {answer?.artists.join(", ")}</p>
-              </div>
-
-              <Button onClick={nextTrack} size="lg" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                Next Track
-              </Button>
+          {isHost && (
+            <div className="lg:col-span-1">
+              <Card className="p-6 bg-background/95 backdrop-blur">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-5 h-5 text-emerald-600" />
+                  <h3 className="font-semibold text-lg">Player Status</h3>
+                </div>
+                <div className="space-y-2">
+                  {getPlayerList().map((player, index) => {
+                    const hasAnswered = partyData?.currentTrackAnswers?.[player] || false
+                    return (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          hasAnswered ? "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500" : "bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              hasAnswered ? "bg-emerald-600" : "bg-gray-400"
+                            }`}
+                          >
+                            {player[0]?.toUpperCase()}
+                          </div>
+                          <span className="font-medium text-sm">{player}</span>
+                        </div>
+                        {hasAnswered ? (
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-gray-400" />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs text-muted-foreground text-center">
+                    {Object.keys(partyData?.currentTrackAnswers || {}).length} / {getPlayerList().length} answered
+                  </p>
+                </div>
+              </Card>
             </div>
           )}
-        </Card>
+        </div>
 
         <audio ref={audioRef} />
       </div>
