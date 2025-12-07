@@ -328,6 +328,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
+  const completeQuiz = async () => {
+    if (!isHost) return
+
+    try {
+      await fetch("/api/party/next-track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: partyCode }),
+      })
+    } catch (error) {
+      console.error("[v0] Error completing quiz:", error)
+    }
+  }
+
   const getPlayerList = () => {
     const players: string[] = []
     if (partyData?.players) {
@@ -600,12 +614,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
           {isHost && (
             <Button
-              onClick={nextTrack}
+              onClick={currentTrackIndex >= tracks.length - 1 ? completeQuiz : nextTrack}
               size="lg"
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              disabled={currentTrackIndex >= tracks.length - 1}
             >
-              {currentTrackIndex >= tracks.length - 1 ? "Quiz Complete!" : "Next Track"}
+              {currentTrackIndex >= tracks.length - 1 ? "Show Final Results" : "Next Track"}
             </Button>
           )}
 
