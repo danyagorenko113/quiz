@@ -73,16 +73,26 @@ export async function POST(request: NextRequest) {
         try {
           const correctArtist = track.artists[0] // Use first artist as the correct answer
 
-          // Generate 5 similar artists using AI
           const { object } = await generateObject({
             model: "openai/gpt-4o-mini",
             schema: z.object({
               similarArtists: z.array(z.string()).length(5),
             }),
-            prompt: `Generate 5 similar music artist names to "${correctArtist}". 
-            These should be real artists in a similar genre/style but NOT the same artist. 
-            Make them plausible wrong answers for a music quiz.
-            Return only the artist names, no explanations.`,
+            prompt: `You are a music expert. The correct answer is "${correctArtist}".
+            Generate exactly 5 REAL music artists that are similar to "${correctArtist}" in terms of:
+            - Musical genre or style
+            - Era or time period
+            - Popularity level
+            - Musical approach or sound
+            
+            Requirements:
+            - Must be real, well-known artists that actually exist
+            - Should be plausible wrong answers (similar enough to be confusing)
+            - Should NOT include "${correctArtist}" themselves
+            - Should NOT include any artists that are in the song (${track.artists.join(", ")})
+            - Return only artist names, no explanations or numbering
+            
+            Example: If the artist is "Taylor Swift", you might return artists like "Ariana Grande", "Katy Perry", "Dua Lipa", "Selena Gomez", "Billie Eilish"`,
           })
 
           // Shuffle correct answer with AI-generated options
