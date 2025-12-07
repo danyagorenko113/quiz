@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Music, Play, Pause, Users, Trophy, CheckCircle, Clock } from "lucide-react"
+import { Music, Play, Pause, Users, Trophy, CheckCircle, Clock, XCircle } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 interface Track {
@@ -13,6 +13,7 @@ interface Track {
   uri: string
   previewUrl: string | null
   answerOptions?: string[]
+  albumCover?: string
 }
 
 export function QuizInterface({ partyCode }: { partyCode: string }) {
@@ -34,6 +35,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const [isHost, setIsHost] = useState(false)
   const [answerSubmitted, setAnswerSubmitted] = useState(false)
   const [allMembersAnswered, setAllMembersAnswered] = useState(false)
+  const [phase, setPhase] = useState<"playing" | "results">("playing")
 
   useEffect(() => {
     if (!session?.accessToken) return
@@ -127,6 +129,35 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
     return () => clearInterval(interval)
   }, [partyCode, session, isHost])
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/party?code=${partyCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPartyData(data.party)
+
+          if (data.party.phase) {
+            setPhase(data.party.phase)
+          }
+
+          if (data.party.currentTrack !== currentTrackIndex) {
+            setCurrentTrackIndex(data.party.currentTrack)
+            setGuess("")
+            setHasGuessed(false)
+            setAnswer(null)
+            setAnswerSubmitted(false)
+            setPhase("playing")
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Error polling party data:", error)
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [partyCode, currentTrackIndex])
 
   const playTrack = async () => {
     if (!partyData?.tracks[currentTrackIndex]) return
@@ -259,6 +290,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
+  const finishRound = async () => {
+    if (!isHost) return
+
+    try {
+      await fetch("/api/party/finish-round", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: partyCode }),
+      })
+    } catch (error) {
+      console.error("[v0] Error finishing round:", error)
+    }
+  }
+
   const nextTrack = async () => {
     if (!isHost) return
 
@@ -276,6 +321,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
         setHasGuessed(false)
         setAnswer(null)
         setAnswerSubmitted(false)
+        setPhase("playing")
       }
     } catch (error) {
       console.error("[v0] Error advancing track:", error)
@@ -374,7 +420,132 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     )
   }
 
-  const currentTrack = tracks[currentTrackIndex]
+  if (phase === "results" && partyData) {
+    const currentTrack = tracks[currentTrackIndex]
+    const playerAnswers = partyData.playerAnswers || {}
+    const correctAnswers = partyData.currentTrackAnswers || {}
+    const myAnswer = playerAnswers[playerName]
+    const isMyAnswerCorrect = correctAnswers[playerName]
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 flex items-center justify-center p-4">
+        <Card className="w-full max-w-4xl p-8 bg-background/95 backdrop-blur">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2">Round Results</h2>
+            <p className="text-muted-foreground">
+              Track {currentTrackIndex + 1} of {tracks.length}
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center gap-6 mb-8">
+            {currentTrack.albumCover && (
+              <img
+                src={currentTrack.albumCover || "/placeholder.svg"}
+                alt={currentTrack.name}
+                className="w-48 h-48 rounded-lg shadow-lg"
+              />
+            )}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Correct Answer</p>
+              <h3 className="text-2xl font-bold">{currentTrack.name}</h3>
+              <p className="text-xl text-emerald-600 font-semibold mt-1">by {currentTrack.artists.join(", ")}</p>
+            </div>
+          </div>
+
+          {isHost ? (
+            <div className="space-y-4 mb-6">
+              <h4 className="font-semibold text-lg flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Player Answers
+              </h4>
+              <div className="space-y-2">
+                {getPlayerList().map((player, index) => {
+                  const playerAnswer = playerAnswers[player]
+                  const isCorrect = correctAnswers[player]
+                  return (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg ${
+                        isCorrect
+                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500"
+                          : "bg-red-50 dark:bg-red-950/30 border-2 border-red-500"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                              isCorrect ? "bg-emerald-600" : "bg-red-600"
+                            }`}
+                          >
+                            {player[0]?.toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-semibold">{player}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Answered: <span className="font-medium">{playerAnswer || "No answer"}</span>
+                            </p>
+                          </div>
+                        </div>
+                        {isCorrect ? (
+                          <CheckCircle className="w-6 h-6 text-emerald-600" />
+                        ) : (
+                          <XCircle className="w-6 h-6 text-red-600" />
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6">
+              <div
+                className={`p-6 rounded-lg text-center ${
+                  isMyAnswerCorrect
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500"
+                    : "bg-red-50 dark:bg-red-950/30 border-2 border-red-500"
+                }`}
+              >
+                {isMyAnswerCorrect ? (
+                  <>
+                    <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-emerald-700 mb-2">Correct!</h3>
+                    <p className="text-muted-foreground">You guessed: {myAnswer}</p>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-16 h-16 text-red-600 mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-red-700 mb-2">Wrong Answer</h3>
+                    <p className="text-muted-foreground">You guessed: {myAnswer}</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isHost && (
+            <Button
+              onClick={nextTrack}
+              size="lg"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={currentTrackIndex >= tracks.length - 1}
+            >
+              {currentTrackIndex >= tracks.length - 1 ? "Quiz Complete!" : "Next Track"}
+            </Button>
+          )}
+
+          {!isHost && (
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Waiting for host to continue...</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    )
+  }
+
   const isQuizComplete = currentTrackIndex >= tracks.length
 
   if (isQuizComplete) {
@@ -401,6 +572,8 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
       </div>
     )
   }
+
+  const currentTrack = tracks[currentTrackIndex]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
@@ -492,27 +665,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                     <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
                       <Clock className="w-12 h-12 text-blue-500 mx-auto mb-3 animate-pulse" />
                       <p className="text-lg font-semibold mb-2">Answer Submitted!</p>
-                      <p className="text-sm text-muted-foreground">Waiting for host to play the next track...</p>
+                      <p className="text-sm text-muted-foreground">Waiting for host to finish the round...</p>
                     </div>
-                  ) : (
-                    <>
-                      <div className="p-4 rounded-lg bg-muted">
-                        <p className="text-sm text-muted-foreground mb-2">Correct Answer</p>
-                        <p className="text-xl font-bold">{answer?.name}</p>
-                        <p className="text-lg text-muted-foreground">by {answer?.artists.join(", ")}</p>
-                      </div>
-
-                      {isHost && (
-                        <Button
-                          onClick={nextTrack}
-                          size="lg"
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                        >
-                          Next Track
-                        </Button>
-                      )}
-                    </>
-                  )}
+                  ) : null}
                 </div>
               )}
             </Card>
@@ -557,11 +712,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
                 {allMembersAnswered && (
                   <Button
-                    onClick={nextTrack}
+                    onClick={finishRound}
                     size="lg"
                     className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
-                    Next Track
+                    Finish Round
                   </Button>
                 )}
               </Card>
