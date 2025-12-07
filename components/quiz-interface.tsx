@@ -16,6 +16,12 @@ interface Track {
   albumCover?: string
 }
 
+interface Player {
+  id: string
+  name: string
+  score: number
+}
+
 export function QuizInterface({ partyCode }: { partyCode: string }) {
   const { data: session } = useSession()
   const [partyData, setPartyData] = useState<any>(null)
@@ -375,9 +381,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const isQuizComplete = partyData?.status === "finished"
 
   if (isQuizComplete) {
-    const sortedPlayers = [...(partyData?.players || [])]
-      .filter((p: any) => typeof p === "object" && p.name !== partyData?.host)
-      .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+    const normalizedPlayers = partyData.players.map((p: string | Player) => {
+      if (typeof p === "string") {
+        return { id: p, name: p, score: 0 }
+      }
+      return p
+    })
+
+    const sortedPlayers = [...normalizedPlayers]
+      .filter((p: Player) => p.name !== partyData?.host)
+      .sort((a: Player, b: Player) => (b.score || 0) - (a.score || 0))
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
@@ -391,7 +404,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           </div>
 
           <div className="space-y-3 mb-6">
-            {sortedPlayers.map((player: any, index: number) => {
+            {sortedPlayers.map((player: Player, index: number) => {
               const isCurrentPlayer = player.name === playerName
               const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : null
 
