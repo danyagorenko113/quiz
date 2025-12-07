@@ -13,6 +13,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
 
+    if (party.currentTrack + 1 >= party.tracks.length) {
+      party.status = "finished"
+      party.currentTrack = party.tracks.length
+      await updateParty(code, party)
+      return NextResponse.json({ success: true, finished: true })
+    }
+
     party.currentTrack = (party.currentTrack || 0) + 1
     party.currentTrackAnswers = {}
     party.playerAnswers = {}
