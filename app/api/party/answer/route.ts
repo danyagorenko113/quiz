@@ -13,6 +13,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
 
+    if (playerName === party.host) {
+      return NextResponse.json({
+        correct: false,
+        answer: {
+          name: party.tracks[trackIndex]?.name || "",
+          artists: party.tracks[trackIndex]?.artists || [],
+        },
+      })
+    }
+
     const track = party.tracks[trackIndex]
     if (!track) {
       return NextResponse.json({ error: "Invalid track" }, { status: 400 })
