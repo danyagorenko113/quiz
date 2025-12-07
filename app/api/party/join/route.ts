@@ -28,7 +28,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name already taken" }, { status: 400 })
     }
 
-    party.players.push(playerName)
+    party.players.push({
+      id: `player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: playerName,
+      score: 0,
+    })
     const updatedParty = await updateParty(code, party)
 
     console.log("[v0] Player joined successfully, updated in Redis:", updatedParty)
