@@ -55,21 +55,21 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
-      <Card className="w-full max-w-md p-8 bg-background/95 backdrop-blur">
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <Card className="w-full max-w-md p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
         <div className="flex flex-col items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center">
-            <Music className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center shadow-[0_0_30px_rgba(32,215,96,0.6)]">
+            <Music className="w-10 h-10 text-black" />
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold">Join Quiz Party</h1>
-            <p className="text-muted-foreground">Enter the party code to start guessing</p>
+            <h1 className="text-3xl font-bold text-white">Join Quiz Party</h1>
+            <p className="text-gray-400">Enter the party code to start guessing</p>
           </div>
 
           <div className="w-full space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your Name</label>
+              <label className="text-sm font-medium text-gray-300">Your Name</label>
               <Input
                 type="text"
                 placeholder="Enter your name"
@@ -78,12 +78,12 @@ export default function JoinPage() {
                   setPlayerName(e.target.value)
                   setError("")
                 }}
-                className="text-lg"
+                className="text-lg bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#20d760]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Party Code</label>
+              <label className="text-sm font-medium text-gray-300">Party Code</label>
               <Input
                 type="text"
                 placeholder="ABC123"
@@ -92,20 +92,24 @@ export default function JoinPage() {
                   setPartyCode(e.target.value.toUpperCase())
                   setError("")
                 }}
-                className="text-lg uppercase"
+                className="text-lg uppercase bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus:border-[#20d760]"
                 maxLength={6}
               />
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-[#fc4839]">{error}</p>}
 
-            <Button onClick={handleJoin} size="lg" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button
+              onClick={handleJoin}
+              size="lg"
+              className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)] hover:shadow-[0_0_30px_rgba(32,215,96,0.7)]"
+            >
               Join Party
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
 
-          <a href="/" className="text-sm text-muted-foreground hover:underline">
+          <a href="/" className="text-sm text-gray-500 hover:text-[#20d760] transition-colors">
             Back to home
           </a>
         </div>
