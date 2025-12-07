@@ -139,7 +139,6 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
             }),
           })
 
-          // Stop after 10 seconds
           playbackTimerRef.current = setTimeout(() => {
             pauseTrack()
           }, 10000)
@@ -150,9 +149,23 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
       }
     }
 
-    if (!isHost) {
-      alert("Only the host can control music playback. Listen from the host's device!")
-      return
+    if (!isHost && track.previewUrl && audioRef.current) {
+      audioRef.current.src = track.previewUrl
+      audioRef.current.currentTime = 0
+
+      try {
+        await audioRef.current.play()
+        setIsPlaying(true)
+
+        playbackTimerRef.current = setTimeout(() => {
+          pauseTrack()
+        }, 10000)
+      } catch (error) {
+        console.error("[v0] Error playing preview:", error)
+        alert("Unable to play audio. Please ensure your browser allows audio playback.")
+      }
+    } else if (!isHost && !track.previewUrl) {
+      alert("This track doesn't have a preview available. Listen from the host's device!")
     }
   }
 
@@ -378,30 +391,28 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           {!hasGuessed ? (
             <div className="space-y-6">
               <div className="flex justify-center gap-4">
-                {isHost ? (
-                  !isPlaying ? (
-                    <Button
-                      onClick={playTrack}
-                      size="lg"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-                    >
-                      <Play className="w-5 h-5" />
-                      Play 10 Seconds
-                    </Button>
-                  ) : (
-                    <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
-                      <Pause className="w-5 h-5" />
-                      Pause
-                    </Button>
-                  )
+                {!isPlaying ? (
+                  <Button
+                    onClick={playTrack}
+                    size="lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                  >
+                    <Play className="w-5 h-5" />
+                    Play 10 Seconds
+                  </Button>
                 ) : (
-                  <div className="text-center text-muted-foreground">
-                    <Music className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Waiting for host to play the track...</p>
-                    <p className="text-xs mt-1">Listen from the host's device</p>
-                  </div>
+                  <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
+                    <Pause className="w-5 h-5" />
+                    Pause
+                  </Button>
                 )}
               </div>
+
+              {!isHost && !currentTrack.previewUrl && (
+                <p className="text-center text-sm text-muted-foreground">
+                  ⚠️ This track doesn't have a preview. Listen from the host's device!
+                </p>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
