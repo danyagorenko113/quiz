@@ -310,6 +310,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
+  const finishGame = async () => {
+    if (!isHost) return
+
+    try {
+      await fetch("/api/party/finish-game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: partyCode }),
+      })
+    } catch (error) {
+      console.error("[v0] Error finishing game:", error)
+    }
+  }
+
   const nextTrack = async () => {
     if (!isHost) return
 
@@ -626,13 +640,23 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           )}
 
           {isHost && (
-            <Button
-              onClick={currentTrackIndex >= tracks.length - 1 ? completeQuiz : nextTrack}
-              size="lg"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              {currentTrackIndex >= tracks.length - 1 ? "Show Final Results" : "Next Track"}
-            </Button>
+            <div className="space-y-4">
+              <Button
+                onClick={currentTrackIndex >= tracks.length - 1 ? completeQuiz : nextTrack}
+                size="lg"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {currentTrackIndex >= tracks.length - 1 ? "Show Final Results" : "Next Track"}
+              </Button>
+              <Button
+                onClick={finishGame}
+                variant="outline"
+                size="lg"
+                className="w-full mt-2 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 bg-transparent"
+              >
+                Finish Game
+              </Button>
+            </div>
           )}
 
           {!isHost && (
