@@ -358,6 +358,80 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     )
   }
 
+  const isQuizComplete = partyData?.status === "finished"
+
+  if (isQuizComplete) {
+    const sortedPlayers = [...(partyData?.players || [])]
+      .filter((p: any) => typeof p === "object" && p.name !== partyData?.host)
+      .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl p-8 bg-background/95 backdrop-blur">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-4xl font-bold mb-2">Quiz Complete!</h2>
+            <p className="text-muted-foreground">{partyData.tracks.length} tracks • Final Results</p>
+          </div>
+
+          <div className="space-y-3 mb-6">
+            {sortedPlayers.map((player: any, index: number) => {
+              const isCurrentPlayer = player.name === playerName
+              const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : null
+
+              return (
+                <div
+                  key={player.id || player.name}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    isCurrentPlayer
+                      ? "bg-emerald-500/20 border-emerald-500"
+                      : index === 0
+                        ? "bg-yellow-500/10 border-yellow-500/50"
+                        : "bg-muted/50 border-border"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-lg">
+                        {medal || `#${index + 1}`}
+                      </div>
+                      <div>
+                        <p className="font-semibold">
+                          {player.name}
+                          {isCurrentPlayer && <span className="ml-2 text-xs text-emerald-600 font-normal">(You)</span>}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {player.score || 0} / {partyData.tracks.length} correct
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-emerald-600">{player.score || 0}</p>
+                      <p className="text-xs text-muted-foreground">points</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {isHost && (
+            <Button
+              onClick={() => (window.location.href = "/host")}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+              size="lg"
+            >
+              <Music className="w-4 h-4 mr-2" />
+              Start New Quiz
+            </Button>
+          )}
+        </Card>
+      </div>
+    )
+  }
+
   if (isWaiting) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
@@ -546,35 +620,6 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     )
   }
 
-  const isQuizComplete = currentTrackIndex >= tracks.length
-
-  if (isQuizComplete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center bg-background/95 backdrop-blur">
-          <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4">
-            <Trophy className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-3xl font-bold mb-2">Quiz Complete!</h2>
-          <p className="text-5xl font-bold text-emerald-600 my-6">
-            {score} / {tracks.length}
-          </p>
-          <p className="text-muted-foreground mb-6">
-            Great job! You got {score} out of {tracks.length} correct.
-          </p>
-          <Button
-            onClick={() => (window.location.href = "/host")}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            Start New Quiz
-          </Button>
-        </Card>
-      </div>
-    )
-  }
-
-  const currentTrack = tracks[currentTrackIndex]
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
       <div className="max-w-6xl mx-auto py-8">
@@ -632,7 +677,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                     )}
                   </div>
 
-                  {!isHost && !currentTrack.previewUrl && (
+                  {!isHost && !tracks[currentTrackIndex].previewUrl && (
                     <p className="text-center text-sm text-muted-foreground">
                       ⚠️ This track doesn't have a preview. Listen from the host's device!
                     </p>
@@ -643,7 +688,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                       <div className="space-y-3">
                         <label className="text-sm font-medium">Who is the artist?</label>
                         <div className="grid grid-cols-2 gap-3">
-                          {currentTrack?.answerOptions?.map((artist, index) => (
+                          {tracks[currentTrackIndex]?.answerOptions?.map((artist, index) => (
                             <Button
                               key={index}
                               onClick={() => submitGuess(artist)}
