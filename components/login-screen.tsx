@@ -3,7 +3,7 @@
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Music } from "lucide-react"
+import { Disc3 } from "lucide-react"
 
 export function LoginScreen() {
   return (
@@ -11,7 +11,7 @@ export function LoginScreen() {
       <Card className="w-full max-w-md p-10 bg-zinc-900/80 backdrop-blur border-zinc-800">
         <div className="flex flex-col items-center gap-8 text-center">
           <div className="w-24 h-24 rounded-full bg-[#20d760] flex items-center justify-center">
-            <Music className="w-12 h-12 text-black" strokeWidth={2.5} />
+            <Disc3 className="w-12 h-12 text-black" strokeWidth={2.5} />
           </div>
 
           <div className="space-y-3">
