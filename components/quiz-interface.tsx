@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Music, Play, Pause, Users, Trophy, CheckCircle, Clock } from "lucide-react"
 import { useSession } from "next-auth/react"
 
@@ -13,6 +12,7 @@ interface Track {
   artists: string[]
   uri: string
   previewUrl: string | null
+  answerOptions?: string[]
 }
 
 export function QuizInterface({ partyCode }: { partyCode: string }) {
@@ -226,8 +226,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     setIsPlaying(false)
   }
 
-  const submitGuess = async () => {
-    if (!guess.trim()) return
+  const submitGuess = async (selectedArtist?: string) => {
+    const guessToSubmit = selectedArtist || guess
+    if (!guessToSubmit.trim()) return
 
     try {
       const response = await fetch("/api/party/answer", {
@@ -236,7 +237,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
         body: JSON.stringify({
           code: partyCode,
           playerName,
-          guess,
+          guess: guessToSubmit,
           trackIndex: currentTrackIndex,
         }),
       })
@@ -466,26 +467,22 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
                   {!isHost && (
                     <>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
-                        <Input
-                          type="text"
-                          placeholder="e.g., Taylor Swift - Shake It Off"
-                          value={guess}
-                          onChange={(e) => setGuess(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && submitGuess()}
-                          className="text-lg"
-                        />
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Who is the artist?</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {currentTrack?.answerOptions?.map((artist, index) => (
+                            <Button
+                              key={index}
+                              onClick={() => submitGuess(artist)}
+                              variant="outline"
+                              size="lg"
+                              className="h-auto py-4 text-base font-medium hover:bg-emerald-50 hover:border-emerald-600 hover:text-emerald-700"
+                            >
+                              {artist}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
-
-                      <Button
-                        onClick={submitGuess}
-                        disabled={!guess.trim()}
-                        size="lg"
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        Submit Guess
-                      </Button>
                     </>
                   )}
                 </div>
