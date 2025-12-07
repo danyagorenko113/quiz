@@ -28,13 +28,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid track" }, { status: 400 })
     }
 
-    const correctAnswer = `${track.name} ${track.artists.join(" ")}`.toLowerCase()
-    const userGuess = guess.toLowerCase()
-
-    const isCorrect =
-      correctAnswer.includes(userGuess) ||
-      userGuess.includes(track.name.toLowerCase()) ||
-      track.artists.some((artist) => userGuess.includes(artist.toLowerCase()))
+    const correctArtist = track.artists[0]
+    const isCorrect = guess.trim() === correctArtist
 
     if (!party.currentTrackAnswers) {
       party.currentTrackAnswers = {}
