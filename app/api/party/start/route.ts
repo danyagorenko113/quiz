@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getParty, updateParty } from "@/lib/redis"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { generateObject } from "ai"
+import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,21 +45,21 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     console.log("[v0] Raw Spotify data items count:", data.items?.length)
 
-    const validTracks = data.items
-      .filter((item: any) => item.track && item.track.id) // Only filter out null tracks
+    const rawTracks = data.items
+      .filter((item: any) => item.track && item.track.id)
       .map((item: any) => ({
         id: item.track.id,
         name: item.track.name,
         artists: item.track.artists.map((a: any) => a.name),
-        uri: item.track.uri, // Add Spotify URI for playback
-        previewUrl: item.track.preview_url, // Keep this for fallback
+        uri: item.track.uri,
+        previewUrl: item.track.preview_url,
       }))
       .sort(() => Math.random() - 0.5)
       .slice(0, 10)
 
-    console.log("[v0] Valid tracks:", validTracks.length)
+    console.log("[v0] Valid tracks:", rawTracks.length)
 
-    if (validTracks.length === 0) {
+    if (rawTracks.length === 0) {
       console.error("[v0] No valid tracks found in playlist")
       return NextResponse.json(
         { error: "No valid tracks found in this playlist. Try a different playlist." },
@@ -65,14 +67,52 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log("[v0] Generating answer options for tracks...")
+    const tracksWithOptions = await Promise.all(
+      rawTracks.map(async (track) => {
+        try {
+          const correctArtist = track.artists[0] // Use first artist as the correct answer
+
+          // Generate 5 similar artists using AI
+          const { object } = await generateObject({
+            model: "openai/gpt-4o-mini",
+            schema: z.object({
+              similarArtists: z.array(z.string()).length(5),
+            }),
+            prompt: `Generate 5 similar music artist names to "${correctArtist}". 
+            These should be real artists in a similar genre/style but NOT the same artist. 
+            Make them plausible wrong answers for a music quiz.
+            Return only the artist names, no explanations.`,
+          })
+
+          // Shuffle correct answer with AI-generated options
+          const allOptions = [correctArtist, ...object.similarArtists].sort(() => Math.random() - 0.5)
+
+          return {
+            ...track,
+            answerOptions: allOptions,
+          }
+        } catch (error) {
+          console.error("[v0] Error generating options for track:", track.name, error)
+          // Fallback to just the correct artist if AI fails
+          return {
+            ...track,
+            answerOptions: [track.artists[0]],
+          }
+        }
+      }),
+    )
+
+    console.log("[v0] Generated answer options for all tracks")
+
     const updatedParty = await updateParty(code, {
       ...party,
-      tracks: validTracks,
+      tracks: tracksWithOptions,
       status: "playing",
       currentTrack: 0,
     })
 
-    console.log("[v0] Party updated successfully with", validTracks.length, "tracks")
+    console.log("[v0] Party updated successfully with", tracksWithOptions.length, "tracks")
     console.log("[v0] Updated party status:", updatedParty?.status)
 
     return NextResponse.json({ success: true, party: updatedParty })
