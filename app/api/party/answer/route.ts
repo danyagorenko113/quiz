@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getParty } from "@/lib/redis"
+import { getParty, updateParty } from "@/lib/redis"
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +25,12 @@ export async function POST(request: NextRequest) {
       correctAnswer.includes(userGuess) ||
       userGuess.includes(track.name.toLowerCase()) ||
       track.artists.some((artist) => userGuess.includes(artist.toLowerCase()))
+
+    if (!party.currentTrackAnswers) {
+      party.currentTrackAnswers = {}
+    }
+    party.currentTrackAnswers[playerName] = true
+    await updateParty(code, party)
 
     return NextResponse.json({
       correct: isCorrect,
