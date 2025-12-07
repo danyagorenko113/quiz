@@ -31,6 +31,20 @@ export async function POST(request: NextRequest) {
     const correctArtist = track.artists[0]
     const isCorrect = guess.trim() === correctArtist
 
+    if (isCorrect) {
+      const playerIndex = party.players.findIndex((p) => {
+        if (typeof p === "string") return p === playerName
+        return p.name === playerName
+      })
+
+      if (playerIndex !== -1) {
+        const player = party.players[playerIndex]
+        if (typeof player === "object") {
+          player.score = (player.score || 0) + 1
+        }
+      }
+    }
+
     if (!party.currentTrackAnswers) {
       party.currentTrackAnswers = {}
     }
