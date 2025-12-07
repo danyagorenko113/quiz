@@ -33,6 +33,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [isHost, setIsHost] = useState(false)
   const [answerSubmitted, setAnswerSubmitted] = useState(false)
+  const [allMembersAnswered, setAllMembersAnswered] = useState(false)
 
   useEffect(() => {
     if (!session?.accessToken) return
@@ -96,6 +97,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
             setAnswer(null)
             setAnswerSubmitted(false)
           }
+
+          // Check if all members have answered
+          const players = getPlayerList()
+          const answeredPlayers = Object.keys(partyData?.currentTrackAnswers || {})
+          setAllMembersAnswered(answeredPlayers.length === players.length)
         }
       } catch (error) {
         console.error("[v0] Error fetching party:", error)
@@ -544,11 +550,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                     )
                   })}
                 </div>
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs text-muted-foreground text-center">
-                    {Object.keys(partyData?.currentTrackAnswers || {}).length} / {getPlayerList().length} answered
-                  </p>
-                </div>
+
+                {allMembersAnswered && (
+                  <Button
+                    onClick={nextTrack}
+                    size="lg"
+                    className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    Next Track
+                  </Button>
+                )}
               </Card>
             </div>
           )}
