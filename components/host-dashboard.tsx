@@ -75,40 +75,38 @@ export function HostDashboard({ session }: { session: Session }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-4xl mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-              <Music className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 rounded-full bg-[#20d760] flex items-center justify-center shadow-[0_0_20px_rgba(32,215,96,0.6)]">
+              <Music className="w-6 h-6 text-black" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Host a Quiz Party</h1>
-              <p className="text-emerald-100">Welcome, {session.user?.name}</p>
+              <p className="text-gray-400">Welcome, {session.user?.name}</p>
             </div>
           </div>
           <Button
             onClick={() => signOut({ callbackUrl: "/" })}
             variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-[#20d760]"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
         </div>
 
-        <Card className="p-6 bg-background/95 backdrop-blur">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5" />
+        <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
+            <Users className="w-5 h-5 text-[#20d760]" />
             Select a Playlist
           </h2>
 
           {loading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading your playlists...</div>
+            <div className="text-center py-12 text-gray-400">Loading your playlists...</div>
           ) : playlists.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No playlists found. Create one in Spotify first!
-            </div>
+            <div className="text-center py-12 text-gray-400">No playlists found. Create one in Spotify first!</div>
           ) : (
             <div className="space-y-4">
               <div className="grid gap-3 max-h-[400px] overflow-y-auto">
@@ -118,8 +116,8 @@ export function HostDashboard({ session }: { session: Session }) {
                     onClick={() => setSelectedPlaylist(playlist.id)}
                     className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left ${
                       selectedPlaylist === playlist.id
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
-                        : "border-border hover:border-emerald-300"
+                        ? "border-[#20d760] bg-[#20d760]/10 shadow-[0_0_15px_rgba(32,215,96,0.3)]"
+                        : "border-zinc-800 hover:border-[#20d760]/50 bg-zinc-900/50"
                     }`}
                   >
                     {playlist.images[0] ? (
@@ -129,13 +127,13 @@ export function HostDashboard({ session }: { session: Session }) {
                         className="w-16 h-16 rounded object-cover"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
-                        <Music className="w-8 h-8 text-muted-foreground" />
+                      <div className="w-16 h-16 rounded bg-zinc-800 flex items-center justify-center">
+                        <Music className="w-8 h-8 text-gray-600" />
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold">{playlist.name}</h3>
-                      <p className="text-sm text-muted-foreground">{playlist.tracks.total} tracks</p>
+                      <h3 className="font-semibold text-white">{playlist.name}</h3>
+                      <p className="text-sm text-gray-400">{playlist.tracks.total} tracks</p>
                     </div>
                   </button>
                 ))}
@@ -145,7 +143,7 @@ export function HostDashboard({ session }: { session: Session }) {
                 onClick={handleStartParty}
                 disabled={!selectedPlaylist}
                 size="lg"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)] hover:shadow-[0_0_30px_rgba(32,215,96,0.7)]"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Start Quiz Party
@@ -213,44 +211,49 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
   const canStart = players.length >= 1
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-2xl mx-auto py-8">
-        <Card className="p-8 bg-background/95 backdrop-blur">
+        <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-10 h-10 text-white" />
+            <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(32,215,96,0.6)]">
+              <Users className="w-10 h-10 text-black" />
             </div>
-            <h1 className="text-3xl font-bold mb-2">Party Lobby</h1>
-            <p className="text-muted-foreground">Share the code with your friends</p>
+            <h1 className="text-3xl font-bold mb-2 text-white">Party Lobby</h1>
+            <p className="text-gray-400">Share the code with your friends</p>
           </div>
 
-          <div className="bg-muted rounded-lg p-6 mb-6 text-center">
-            <p className="text-sm text-muted-foreground mb-2">Party Code</p>
+          <div className="bg-zinc-800/50 rounded-lg p-6 mb-6 text-center border border-zinc-700">
+            <p className="text-sm text-gray-400 mb-2">Party Code</p>
             <div className="flex items-center justify-center gap-2">
-              <p className="text-5xl font-bold tracking-wider">{partyCode}</p>
-              <Button onClick={copyInviteCode} size="sm" variant="outline" className="bg-transparent">
+              <p className="text-5xl font-bold tracking-wider text-[#20d760]">{partyCode}</p>
+              <Button
+                onClick={copyInviteCode}
+                size="sm"
+                variant="outline"
+                className="bg-transparent border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:border-[#20d760]"
+              >
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Players join at: {window.location.origin}/join</p>
+            <p className="text-xs text-gray-500 mt-2">Players join at: {window.location.origin}/join</p>
           </div>
 
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Users className="w-5 h-5" />
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-white">
+                <Users className="w-5 h-5 text-[#20d760]" />
                 Players ({players.length + 1}/5)
               </h2>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border-2 border-emerald-500">
-                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
+              <div className="flex items-center gap-3 p-3 bg-[#20d760]/10 rounded-lg border-2 border-[#20d760]">
+                <div className="w-10 h-10 rounded-full bg-[#20d760] flex items-center justify-center text-black font-bold">
                   {session.user?.name?.[0]?.toUpperCase() || "H"}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold">{session.user?.name}</p>
-                  <p className="text-xs text-muted-foreground">Host</p>
+                  <p className="font-semibold text-white">{session.user?.name}</p>
+                  <p className="text-xs text-gray-400">Host</p>
                 </div>
               </div>
 
@@ -259,21 +262,21 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
                 return (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-muted rounded-lg animate-in fade-in slide-in-from-left"
+                    className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg animate-in fade-in slide-in-from-left border border-zinc-700"
                   >
-                    <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
+                    <div className="w-10 h-10 rounded-full bg-[#01fffe] flex items-center justify-center text-black font-bold">
                       {playerName[0]?.toUpperCase() || "P"}
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold">{playerName}</p>
-                      <p className="text-xs text-muted-foreground">Player</p>
+                      <p className="font-semibold text-white">{playerName}</p>
+                      <p className="text-xs text-gray-400">Player</p>
                     </div>
                   </div>
                 )
               })}
 
               {players.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-gray-400">
                   <p>Waiting for players to join...</p>
                   <p className="text-sm mt-2">Minimum 2 players (including host) required</p>
                 </div>
@@ -285,16 +288,14 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
             onClick={startQuiz}
             disabled={!canStart}
             size="lg"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+            className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold disabled:opacity-30 shadow-[0_0_20px_rgba(32,215,96,0.5)] hover:shadow-[0_0_30px_rgba(32,215,96,0.7)]"
           >
             <Play className="w-5 h-5 mr-2" />
             {canStart ? "Start Quiz" : `Need ${1 - players.length} more player${players.length === 0 ? "s" : ""}`}
           </Button>
 
           {!canStart && (
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              At least 1 other player must join before starting
-            </p>
+            <p className="text-xs text-center text-gray-500 mt-2">At least 1 other player must join before starting</p>
           )}
         </Card>
       </div>
