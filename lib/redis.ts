@@ -17,6 +17,7 @@ export interface Party {
   tracks: Track[]
   currentTrack: number
   maxPlayers?: number
+  currentTrackAnswers?: Record<string, boolean>
 }
 
 export interface Player {
