@@ -375,8 +375,13 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center">
-        <p className="text-white text-xl">Loading...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-[#2a2a2a] border-t-[#20d760] rounded-full animate-spin mx-auto"></div>
+          </div>
+          <p className="text-white text-xl font-medium">Loading...</p>
+        </div>
       </div>
     )
   }
@@ -532,8 +537,13 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   if (tracks.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center">
-        <p className="text-white text-xl">Loading tracks...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-[#2a2a2a] border-t-[#20d760] rounded-full animate-spin mx-auto"></div>
+          </div>
+          <p className="text-white text-xl font-medium">Loading tracks...</p>
+        </div>
       </div>
     )
   }
