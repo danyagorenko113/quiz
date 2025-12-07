@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         artists: item.track.artists.map((a: any) => a.name),
         uri: item.track.uri,
         previewUrl: item.track.preview_url,
+        albumCover: item.track.album?.images?.[0]?.url || null,
       }))
       .sort(() => Math.random() - 0.5)
       .slice(0, 10)
@@ -120,6 +121,8 @@ export async function POST(request: NextRequest) {
       tracks: tracksWithOptions,
       status: "playing",
       currentTrack: 0,
+      phase: "playing",
+      playerAnswers: {},
     })
 
     console.log("[v0] Party updated successfully with", tracksWithOptions.length, "tracks")
