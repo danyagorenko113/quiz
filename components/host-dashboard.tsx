@@ -79,7 +79,7 @@ export function HostDashboard({ session }: { session: Session }) {
       <div className="max-w-4xl mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#20d760] flex items-center justify-center shadow-[0_0_20px_rgba(32,215,96,0.6)]">
+            <div className="w-12 h-12 rounded-full bg-[#20d760] flex items-center justify-center">
               <Music className="w-6 h-6 text-black" />
             </div>
             <div>
@@ -104,7 +104,10 @@ export function HostDashboard({ session }: { session: Session }) {
           </h2>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-400">Loading your playlists...</div>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 border-4 border-[#2a2a2a] border-t-[#20d760] rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading your playlists...</p>
+            </div>
           ) : playlists.length === 0 ? (
             <div className="text-center py-12 text-gray-400">No playlists found. Create one in Spotify first!</div>
           ) : (
@@ -116,7 +119,7 @@ export function HostDashboard({ session }: { session: Session }) {
                     onClick={() => setSelectedPlaylist(playlist.id)}
                     className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left ${
                       selectedPlaylist === playlist.id
-                        ? "border-[#20d760] bg-[#20d760]/10 shadow-[0_0_15px_rgba(32,215,96,0.3)]"
+                        ? "border-[#20d760] bg-[#20d760]/10"
                         : "border-zinc-800 hover:border-[#20d760]/50 bg-zinc-900/50"
                     }`}
                   >
@@ -143,7 +146,7 @@ export function HostDashboard({ session }: { session: Session }) {
                 onClick={handleStartParty}
                 disabled={!selectedPlaylist}
                 size="lg"
-                className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)] hover:shadow-[0_0_30px_rgba(32,215,96,0.7)]"
+                className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Start Quiz Party
@@ -215,7 +218,7 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
       <div className="max-w-2xl mx-auto py-8">
         <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(32,215,96,0.6)]">
+            <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4">
               <Users className="w-10 h-10 text-black" />
             </div>
             <h1 className="text-3xl font-bold mb-2 text-white">Party Lobby</h1>
@@ -288,7 +291,7 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
             onClick={startQuiz}
             disabled={!canStart}
             size="lg"
-            className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold disabled:opacity-30 shadow-[0_0_20px_rgba(32,215,96,0.5)] hover:shadow-[0_0_30px_rgba(32,215,96,0.7)]"
+            className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold disabled:opacity-30"
           >
             <Play className="w-5 h-5 mr-2" />
             {canStart ? "Start Quiz" : `Need ${1 - players.length} more player${players.length === 0 ? "s" : ""}`}
