@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Music, ArrowRight } from "lucide-react"
+import { Disc3, MoveRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function JoinPage() {
@@ -59,7 +59,7 @@ export default function JoinPage() {
       <Card className="w-full max-w-md p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
         <div className="flex flex-col items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center">
-            <Music className="w-10 h-10 text-black" />
+            <Disc3 className="w-10 h-10 text-black" />
           </div>
 
           <div className="text-center space-y-2">
@@ -105,7 +105,7 @@ export default function JoinPage() {
               className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold"
             >
               Join Party
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <MoveRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
 
