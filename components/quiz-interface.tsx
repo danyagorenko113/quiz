@@ -31,6 +31,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   const [player, setPlayer] = useState<any>(null)
   const [deviceId, setDeviceId] = useState<string | null>(null)
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [isHost, setIsHost] = useState(false)
 
   useEffect(() => {
     if (!session?.accessToken) return
@@ -79,6 +80,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           const party = data.party
           setPartyData(party)
 
+          if (session?.user?.email === party.hostEmail) {
+            setIsHost(true)
+          }
+
           if (party.status === "playing") {
             setIsWaiting(false)
           }
@@ -100,15 +105,14 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     const interval = setInterval(fetchPartyData, 2000)
 
     return () => clearInterval(interval)
-  }, [partyCode])
+  }, [partyCode, session])
 
   const playTrack = async () => {
     if (!partyData?.tracks[currentTrackIndex]) return
 
     const track = partyData.tracks[currentTrackIndex]
 
-    // Try Spotify Web Playback SDK first (for host with session)
-    if (session?.accessToken && deviceId && track.uri) {
+    if (isHost && session?.accessToken && deviceId && track.uri) {
       try {
         const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
           method: "PUT",
@@ -125,6 +129,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
         if (response.ok || response.status === 204) {
           setIsPlaying(true)
 
+          await fetch("/api/party/playback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: partyCode,
+              isPlaying: true,
+              trackIndex: currentTrackIndex,
+            }),
+          })
+
           // Stop after 10 seconds
           playbackTimerRef.current = setTimeout(() => {
             pauseTrack()
@@ -136,19 +150,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
       }
     }
 
-    // Fallback to preview URL if available
-    if (audioRef.current && track.previewUrl) {
-      audioRef.current.src = track.previewUrl
-      audioRef.current.play()
-      setIsPlaying(true)
-
-      // Stop after 10 seconds
-      playbackTimerRef.current = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.pause()
-          setIsPlaying(false)
-        }
-      }, 10000)
+    if (!isHost) {
+      alert("Only the host can control music playback. Listen from the host's device!")
+      return
     }
   }
 
@@ -158,13 +162,23 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
       playbackTimerRef.current = null
     }
 
-    if (session?.accessToken && deviceId) {
+    if (isHost && session?.accessToken && deviceId) {
       try {
         await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
           },
+        })
+
+        await fetch("/api/party/playback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: partyCode,
+            isPlaying: false,
+            trackIndex: currentTrackIndex,
+          }),
         })
       } catch (error) {
         console.error("[v0] Error pausing Spotify player:", error)
@@ -343,6 +357,14 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
         </div>
 
         <Card className="p-8 bg-background/95 backdrop-blur">
+          <div className="text-center mb-4">
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}
+            >
+              {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
+            </span>
+          </div>
+
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <Music className="w-4 h-4" />
@@ -356,20 +378,28 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           {!hasGuessed ? (
             <div className="space-y-6">
               <div className="flex justify-center gap-4">
-                {!isPlaying ? (
-                  <Button
-                    onClick={playTrack}
-                    size="lg"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-                  >
-                    <Play className="w-5 h-5" />
-                    Play 10 Seconds
-                  </Button>
+                {isHost ? (
+                  !isPlaying ? (
+                    <Button
+                      onClick={playTrack}
+                      size="lg"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                    >
+                      <Play className="w-5 h-5" />
+                      Play 10 Seconds
+                    </Button>
+                  ) : (
+                    <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
+                      <Pause className="w-5 h-5" />
+                      Pause
+                    </Button>
+                  )
                 ) : (
-                  <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
-                    <Pause className="w-5 h-5" />
-                    Pause
-                  </Button>
+                  <div className="text-center text-muted-foreground">
+                    <Music className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Waiting for host to play the track...</p>
+                    <p className="text-xs mt-1">Listen from the host's device</p>
+                  </div>
                 )}
               </div>
 
