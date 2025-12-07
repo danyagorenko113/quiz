@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import type { Session } from "next-auth"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Music, Users, Play, LogOut } from "lucide-react"
+import { Disc3, UserRound, PlayCircle, LogOut } from "lucide-react"
 import { signOut } from "next-auth/react"
 
 interface Playlist {
@@ -80,7 +80,7 @@ export function HostDashboard({ session }: { session: Session }) {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-[#20d760] flex items-center justify-center">
-              <Music className="w-6 h-6 text-black" />
+              <Disc3 className="w-6 h-6 text-black" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Host a Quiz Party</h1>
@@ -99,7 +99,7 @@ export function HostDashboard({ session }: { session: Session }) {
 
         <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
-            <Users className="w-5 h-5 text-[#20d760]" />
+            <UserRound className="w-5 h-5 text-[#20d760]" />
             Select a Playlist
           </h2>
 
@@ -131,7 +131,7 @@ export function HostDashboard({ session }: { session: Session }) {
                       />
                     ) : (
                       <div className="w-16 h-16 rounded bg-zinc-800 flex items-center justify-center">
-                        <Music className="w-8 h-8 text-gray-600" />
+                        <Disc3 className="w-8 h-8 text-gray-600" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -148,7 +148,7 @@ export function HostDashboard({ session }: { session: Session }) {
                 size="lg"
                 className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold"
               >
-                <Play className="w-5 h-5 mr-2" />
+                <PlayCircle className="w-5 h-5 mr-2" />
                 Start Quiz Party
               </Button>
             </div>
@@ -219,7 +219,7 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
         <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4">
-              <Users className="w-10 h-10 text-black" />
+              <UserRound className="w-10 h-10 text-black" />
             </div>
             <h1 className="text-3xl font-bold mb-2 text-white">Party Lobby</h1>
             <p className="text-gray-400">Share the code with your friends</p>
@@ -244,7 +244,7 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold flex items-center gap-2 text-white">
-                <Users className="w-5 h-5 text-[#20d760]" />
+                <UserRound className="w-5 h-5 text-[#20d760]" />
                 Players ({players.length + 1}/5)
               </h2>
             </div>
@@ -293,7 +293,7 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
             size="lg"
             className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold disabled:opacity-30"
           >
-            <Play className="w-5 h-5 mr-2" />
+            <PlayCircle className="w-5 h-5 mr-2" />
             {canStart ? "Start Quiz" : `Need ${1 - players.length} more player${players.length === 0 ? "s" : ""}`}
           </Button>
 
