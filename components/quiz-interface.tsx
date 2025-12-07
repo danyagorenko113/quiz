@@ -753,7 +753,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                 </div>
                 <div className="space-y-2">
                   {getPlayerList().map((player, index) => {
-                    const hasAnswered = partyData?.currentTrackAnswers?.[player] || false
+                    const hasAnswered = partyData?.currentTrackAnswers?.[player] !== undefined
                     return (
                       <div
                         key={index}
