@@ -12,7 +12,7 @@ export interface Party {
   hostEmail?: string
   playlistId: string
   playlistName: string
-  players: (string | Player)[]
+  players: Player[] // Changed players to always be Player objects with scores
   status: "waiting" | "playing" | "finished"
   tracks: Track[]
   currentTrack: number
