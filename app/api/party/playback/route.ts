@@ -11,7 +11,10 @@ export async function POST(request: NextRequest) {
     }
 
     party.currentTrack = trackIndex
-    party.status = isPlaying ? "playing" : "waiting"
+    // Only update status if explicitly starting playback, otherwise preserve current status
+    if (isPlaying) {
+      party.status = "playing"
+    }
 
     await updateParty(code, party)
 
