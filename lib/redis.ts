@@ -18,6 +18,8 @@ export interface Party {
   currentTrack: number
   maxPlayers?: number
   currentTrackAnswers?: Record<string, boolean>
+  phase?: "playing" | "results"
+  playerAnswers?: Record<string, string>
 }
 
 export interface Player {
@@ -33,6 +35,7 @@ export interface Track {
   previewUrl: string | null
   answerOptions?: string[] // 6 options: 1 correct + 5 AI-generated similar artists
   uri?: string // Spotify URI for playback
+  albumCover?: string
 }
 
 // Store party with 1 hour expiration
