@@ -684,170 +684,168 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   return (
     <div className="min-h-screen bg-black p-4">
-      <div className="max-w-6xl mx-auto py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-white">
-            <p className="text-sm text-gray-400">Party Code</p>
-            <p className="text-2xl font-bold text-[#20d760]">{partyCode}</p>
+      <div className={`max-w-6xl mx-auto py-8 ${!isHost ? "flex items-center justify-center min-h-screen" : ""}`}>
+        <div className={!isHost ? "w-full max-w-2xl" : "w-full"}>
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-white">
+              <p className="text-sm text-gray-400">Party Code</p>
+              <p className="text-2xl font-bold text-[#20d760]">{partyCode}</p>
+            </div>
+            <div className="text-right text-white">
+              <p className="text-sm text-gray-400">Track Progress</p>
+              <p className="text-2xl font-bold text-[#20d760]">
+                {currentTrackIndex + 1} / {tracks.length}
+              </p>
+            </div>
           </div>
-          <div className="text-right text-white">
-            <p className="text-sm text-gray-400">Score</p>
-            <p className="text-2xl font-bold text-[#20d760]">
-              {score} / {currentTrackIndex}
-            </p>
-          </div>
-        </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
-              <div className="text-center mb-4">
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-[#20d760] text-black" : "bg-zinc-800 text-gray-300"}`}
-                >
-                  {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
-                </span>
-              </div>
-
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <Music className="w-4 h-4" />
-                  Track {currentTrackIndex + 1} of {tracks.length}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
+                <div className="text-center mb-4">
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-[#20d760] text-black" : "bg-zinc-800 text-gray-300"}`}
+                  >
+                    {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
+                  </span>
                 </div>
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#20d760] to-[#01fffe] flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(32,215,96,0.6)]">
-                  <Music className="w-16 h-16 text-black" />
-                </div>
-              </div>
 
-              {!hasGuessed ? (
-                <div className="space-y-6">
-                  <div className="flex justify-center gap-4">
-                    {!isPlaying ? (
-                      <Button
-                        onClick={playTrack}
-                        size="lg"
-                        className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold gap-2 shadow-[0_0_20px_rgba(32,215,96,0.5)]"
-                      >
-                        <Play className="w-5 h-5" />
-                        Play 10 Seconds
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={pauseTrack}
-                        size="lg"
-                        variant="outline"
-                        className="gap-2 bg-transparent border-zinc-700 text-gray-300 hover:bg-zinc-800"
-                      >
-                        <Pause className="w-5 h-5" />
-                        Pause
-                      </Button>
-                    )}
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-2">
+                    <Music className="w-4 h-4" />
+                    Track {currentTrackIndex + 1} of {tracks.length}
                   </div>
-
-                  {!isHost && !tracks[currentTrackIndex].previewUrl && (
-                    <p className="text-center text-sm text-gray-400">
-                      ⚠️ This track doesn't have a preview. Listen from the host's device!
-                    </p>
-                  )}
-
-                  {!isHost && (
-                    <>
-                      <div className="space-y-3">
-                        <label className="text-sm font-medium text-gray-300">Who is the artist?</label>
-                        <div className="grid grid-cols-2 gap-3">
-                          {tracks[currentTrackIndex]?.answerOptions?.map((artist, index) => (
-                            <Button
-                              key={index}
-                              onClick={() => submitGuess(artist)}
-                              variant="outline"
-                              size="lg"
-                              className="h-auto py-4 text-base font-medium bg-zinc-800/50 border-zinc-700 text-white hover:bg-[#20d760]/20 hover:border-[#20d760] hover:text-[#20d760]"
-                            >
-                              {artist}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#20d760] to-[#01fffe] flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(32,215,96,0.6)]">
+                    <Music className="w-16 h-16 text-black" />
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-6 text-center">
-                  {!isHost && answerSubmitted ? (
-                    <div className="p-6 rounded-lg bg-[#01fffe]/10 border-2 border-[#01fffe]">
-                      <Clock className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
-                      <p className="text-lg font-semibold mb-2 text-white">Answer Submitted!</p>
-                      <p className="text-sm text-gray-400">Waiting for host to finish the round...</p>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-            </Card>
-          </div>
 
-          {isHost && (
-            <div className="lg:col-span-1">
-              <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <Users className="w-5 h-5 text-[#20d760]" />
-                  <h3 className="font-semibold text-lg text-white">Player Status</h3>
-                </div>
-                <div className="space-y-2">
-                  {getPlayerList().map((player, index) => {
-                    const hasAnswered = partyData?.currentTrackAnswers?.[player] !== undefined
-                    return (
-                      <div
-                        key={index}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          hasAnswered
-                            ? "bg-[#20d760]/10 border border-[#20d760]"
-                            : "bg-zinc-800/50 border border-zinc-700"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                              hasAnswered ? "bg-[#20d760]" : "bg-gray-600"
-                            }`}
+                {!hasGuessed ? (
+                  <div className="space-y-6">
+                    {isHost && (
+                      <div className="flex justify-center gap-4">
+                        {!isPlaying ? (
+                          <Button
+                            onClick={playTrack}
+                            size="lg"
+                            className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold gap-2 shadow-[0_0_20px_rgba(32,215,96,0.5)]"
                           >
-                            {player[0]?.toUpperCase()}
-                          </div>
-                          <span className="font-medium text-sm text-white">{player}</span>
-                        </div>
-                        {hasAnswered ? (
-                          <CheckCircle className="w-5 h-5 text-[#20d760]" />
+                            <Play className="w-5 h-5" />
+                            Play 10 Seconds
+                          </Button>
                         ) : (
-                          <Clock className="w-5 h-5 text-gray-500" />
+                          <Button
+                            onClick={pauseTrack}
+                            size="lg"
+                            variant="outline"
+                            className="gap-2 bg-transparent border-zinc-700 text-gray-300 hover:bg-zinc-800"
+                          >
+                            <Pause className="w-5 h-5" />
+                            Pause
+                          </Button>
                         )}
                       </div>
-                    )
-                  })}
-                </div>
+                    )}
 
-                {allMembersAnswered && (
-                  <Button
-                    onClick={finishRound}
-                    size="lg"
-                    className="w-full mt-4 bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
-                  >
-                    Finish Round
-                  </Button>
+                    {!isHost && (
+                      <>
+                        <div className="space-y-3">
+                          <label className="text-lg font-semibold text-white">Who is the artist?</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            {tracks[currentTrackIndex]?.answerOptions?.map((artist, index) => (
+                              <Button
+                                key={index}
+                                onClick={() => submitGuess(artist)}
+                                variant="outline"
+                                size="lg"
+                                className="h-auto py-4 text-base font-medium bg-zinc-800/50 border-zinc-700 text-white hover:bg-[#20d760]/20 hover:border-[#20d760] hover:text-[#20d760]"
+                              >
+                                {artist}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-6 text-center">
+                    {!isHost && answerSubmitted ? (
+                      <div className="p-6 rounded-lg bg-[#01fffe]/10 border-2 border-[#01fffe]">
+                        <Clock className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
+                        <p className="text-lg font-semibold mb-2 text-white">Answer Submitted!</p>
+                        <p className="text-sm text-gray-400">Waiting for host to finish the round...</p>
+                      </div>
+                    ) : null}
+                  </div>
                 )}
-
-                <Button
-                  onClick={finishGame}
-                  variant="outline"
-                  size="lg"
-                  className="w-full mt-2 border-[#fc4839] text-[#fc4839] hover:bg-[#fc4839]/10 bg-transparent"
-                >
-                  Finish Game
-                </Button>
               </Card>
             </div>
-          )}
-        </div>
 
-        <audio ref={audioRef} />
+            {isHost && (
+              <div className="lg:col-span-1">
+                <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-5 h-5 text-[#20d760]" />
+                    <h3 className="font-semibold text-lg text-white">Player Status</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {getPlayerList().map((player, index) => {
+                      const hasAnswered = partyData?.currentTrackAnswers?.[player] !== undefined
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            hasAnswered
+                              ? "bg-[#20d760]/10 border border-[#20d760]"
+                              : "bg-zinc-800/50 border border-zinc-700"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                                hasAnswered ? "bg-[#20d760]" : "bg-gray-600"
+                              }`}
+                            >
+                              {player[0]?.toUpperCase()}
+                            </div>
+                            <span className="font-medium text-sm text-white">{player}</span>
+                          </div>
+                          {hasAnswered ? (
+                            <CheckCircle className="w-5 h-5 text-[#20d760]" />
+                          ) : (
+                            <Clock className="w-5 h-5 text-gray-500" />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {allMembersAnswered && (
+                    <Button
+                      onClick={finishRound}
+                      size="lg"
+                      className="w-full mt-4 bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
+                    >
+                      Finish Round
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={finishGame}
+                    variant="outline"
+                    size="lg"
+                    className="w-full mt-2 border-[#fc4839] text-[#fc4839] hover:bg-[#fc4839]/10 bg-transparent"
+                  >
+                    Finish Game
+                  </Button>
+                </Card>
+              </div>
+            )}
+          </div>
+
+          <audio ref={audioRef} />
+        </div>
       </div>
     </div>
   )
