@@ -31,6 +31,8 @@ export interface Track {
   name: string
   artists: string[]
   previewUrl: string | null
+  answerOptions?: string[] // 6 options: 1 correct + 5 AI-generated similar artists
+  uri?: string // Spotify URI for playback
 }
 
 // Store party with 1 hour expiration
