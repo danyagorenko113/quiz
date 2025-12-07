@@ -270,7 +270,6 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   const getPlayerList = () => {
     const players: string[] = []
-    if (partyData?.host) players.push(partyData.host)
     if (partyData?.players) {
       partyData.players.forEach((p: string | { name: string }) => {
         const name = typeof p === "string" ? p : p.name
@@ -452,26 +451,30 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                     </p>
                   )}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
-                    <Input
-                      type="text"
-                      placeholder="e.g., Taylor Swift - Shake It Off"
-                      value={guess}
-                      onChange={(e) => setGuess(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && submitGuess()}
-                      className="text-lg"
-                    />
-                  </div>
+                  {!isHost && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Your Guess (Artist and Song Name)</label>
+                        <Input
+                          type="text"
+                          placeholder="e.g., Taylor Swift - Shake It Off"
+                          value={guess}
+                          onChange={(e) => setGuess(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && submitGuess()}
+                          className="text-lg"
+                        />
+                      </div>
 
-                  <Button
-                    onClick={submitGuess}
-                    disabled={!guess.trim()}
-                    size="lg"
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    Submit Guess
-                  </Button>
+                      <Button
+                        onClick={submitGuess}
+                        disabled={!guess.trim()}
+                        size="lg"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        Submit Guess
+                      </Button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-6 text-center">
