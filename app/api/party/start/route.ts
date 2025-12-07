@@ -44,22 +44,23 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Raw Spotify data items count:", data.items?.length)
 
     const validTracks = data.items
+      .filter((item: any) => item.track && item.track.id) // Only filter out null tracks
       .map((item: any) => ({
         id: item.track.id,
         name: item.track.name,
         artists: item.track.artists.map((a: any) => a.name),
-        previewUrl: item.track.preview_url,
+        uri: item.track.uri, // Add Spotify URI for playback
+        previewUrl: item.track.preview_url, // Keep this for fallback
       }))
-      .filter((track: any) => track.previewUrl)
       .sort(() => Math.random() - 0.5)
       .slice(0, 10)
 
-    console.log("[v0] Valid tracks with preview URLs:", validTracks.length)
+    console.log("[v0] Valid tracks:", validTracks.length)
 
     if (validTracks.length === 0) {
-      console.error("[v0] No tracks with preview URLs found in playlist")
+      console.error("[v0] No valid tracks found in playlist")
       return NextResponse.json(
-        { error: "No tracks with preview URLs found in this playlist. Try a different playlist." },
+        { error: "No valid tracks found in this playlist. Try a different playlist." },
         { status: 400 },
       )
     }
