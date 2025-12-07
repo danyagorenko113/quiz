@@ -180,11 +180,7 @@ export function LandingPage({ session }: LandingPageProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-zinc-800 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-500">Made with music in mind. Powered by Spotify & AI.</p>
-        </div>
-      </div>
+      
     </div>
   )
 }
