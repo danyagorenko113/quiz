@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
 
     party.currentTrack = (party.currentTrack || 0) + 1
     party.currentTrackAnswers = {}
+    party.playerAnswers = {}
+    party.phase = "playing"
 
     await updateParty(code, party)
 
