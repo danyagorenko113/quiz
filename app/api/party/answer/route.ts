@@ -34,7 +34,13 @@ export async function POST(request: NextRequest) {
     if (!party.currentTrackAnswers) {
       party.currentTrackAnswers = {}
     }
-    party.currentTrackAnswers[playerName] = true
+    party.currentTrackAnswers[playerName] = isCorrect
+
+    if (!party.playerAnswers) {
+      party.playerAnswers = {}
+    }
+    party.playerAnswers[playerName] = guess.trim()
+
     await updateParty(code, party)
 
     return NextResponse.json({
