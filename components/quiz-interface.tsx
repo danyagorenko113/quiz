@@ -383,10 +383,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
   if (!partyData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
-        <Card className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Party Not Found</h2>
-          <p className="text-muted-foreground">Check your party code and try again.</p>
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <Card className="p-8 text-center bg-zinc-900/80 border-zinc-800">
+          <h2 className="text-2xl font-bold mb-2 text-white">Party Not Found</h2>
+          <p className="text-gray-400">Check your party code and try again.</p>
         </Card>
       </div>
     )
@@ -407,14 +407,14 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
       .sort((a: Player, b: Player) => (b.score || 0) - (a.score || 0))
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl p-8 bg-background/95 backdrop-blur">
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#f89dcf] via-[#fc4839] to-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(252,72,57,0.5)]">
               <Trophy className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-4xl font-bold mb-2">Quiz Complete!</h2>
-            <p className="text-muted-foreground">{partyData.tracks.length} tracks • Final Results</p>
+            <h2 className="text-4xl font-bold mb-2 text-white">Quiz Complete!</h2>
+            <p className="text-gray-400">{partyData.tracks.length} tracks • Final Results</p>
           </div>
 
           <div className="space-y-3 mb-6">
@@ -427,30 +427,30 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                   key={player.id || player.name}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     isCurrentPlayer
-                      ? "bg-emerald-500/20 border-emerald-500"
+                      ? "bg-[#20d760]/20 border-[#20d760]"
                       : index === 0
-                        ? "bg-yellow-500/10 border-yellow-500/50"
-                        : "bg-muted/50 border-border"
+                        ? "bg-[#f89dcf]/10 border-[#f89dcf]/50"
+                        : "bg-zinc-800/50 border-zinc-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-lg">
+                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-lg text-white border border-zinc-700">
                         {medal || `#${index + 1}`}
                       </div>
                       <div>
-                        <p className="font-semibold">
+                        <p className="font-semibold text-white">
                           {player.name}
-                          {isCurrentPlayer && <span className="ml-2 text-xs text-emerald-600 font-normal">(You)</span>}
+                          {isCurrentPlayer && <span className="ml-2 text-xs text-[#20d760] font-normal">(You)</span>}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-400">
                           {player.score || 0} / {partyData.tracks.length} correct
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-emerald-600">{player.score || 0}</p>
-                      <p className="text-xs text-muted-foreground">points</p>
+                      <p className="text-2xl font-bold text-[#20d760]">{player.score || 0}</p>
+                      <p className="text-xs text-gray-500">points</p>
                     </div>
                   </div>
                 </div>
@@ -461,7 +461,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           {isHost && (
             <Button
               onClick={() => (window.location.href = "/host")}
-              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+              className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
               size="lg"
             >
               <Music className="w-4 h-4 mr-2" />
@@ -473,43 +473,46 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     )
   }
 
-  if (isWaiting) {
+  if (partyData.status === "waiting" || partyData.status === "lobby") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
+      <div className="min-h-screen bg-black p-4">
         <div className="max-w-2xl mx-auto py-8">
-          <Card className="p-8 bg-background/95 backdrop-blur">
+          <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(32,215,96,0.6)]">
+                <Users className="w-10 h-10 text-black" />
               </div>
-              <h1 className="text-3xl font-bold mb-2">Waiting Room</h1>
-              <p className="text-muted-foreground mb-6">
-                Party Code: <span className="font-bold text-2xl">{partyCode}</span>
+              <h1 className="text-3xl font-bold mb-2 text-white">Waiting Room</h1>
+              <p className="text-gray-400 mb-6">
+                Party Code: <span className="font-bold text-2xl text-[#20d760]">{partyCode}</span>
               </p>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-4">Players in Lobby</h2>
+                <h2 className="text-lg font-semibold mb-4 text-white">Players in Lobby</h2>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border-2 border-emerald-500">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
+                  <div className="flex items-center gap-3 p-3 bg-[#20d760]/10 rounded-lg border-2 border-[#20d760]">
+                    <div className="w-10 h-10 rounded-full bg-[#20d760] flex items-center justify-center text-black font-bold">
                       H
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="font-semibold">{partyData.host}</p>
-                      <p className="text-xs text-muted-foreground">Host</p>
+                      <p className="font-semibold text-white">{partyData.host}</p>
+                      <p className="text-xs text-gray-400">Host</p>
                     </div>
                   </div>
 
                   {partyData.players?.map((player: string | { name: string }, index: number) => {
                     const playerName = typeof player === "string" ? player : player.name
                     return (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold">
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-[#01fffe] flex items-center justify-center text-black font-bold">
                           {playerName[0]?.toUpperCase()}
                         </div>
                         <div className="flex-1 text-left">
-                          <p className="font-semibold">{playerName}</p>
-                          <p className="text-xs text-muted-foreground">Player</p>
+                          <p className="font-semibold text-white">{playerName}</p>
+                          <p className="text-xs text-gray-400">Player</p>
                         </div>
                       </div>
                     )
@@ -517,7 +520,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                 </div>
               </div>
 
-              <p className="text-muted-foreground animate-pulse">Waiting for host to start the quiz...</p>
+              <p className="text-gray-400 animate-pulse">Waiting for host to start the quiz...</p>
             </div>
           </Card>
         </div>
@@ -543,11 +546,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     const isMyAnswerCorrect = correctAnswers[playerName]
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 flex items-center justify-center p-4">
-        <Card className="w-full max-w-4xl p-8 bg-background/95 backdrop-blur">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2">Round Results</h2>
-            <p className="text-muted-foreground">
+      <div className="min-h-screen bg-black p-4">
+        <Card className="w-full max-w-3xl mx-auto p-8 bg-zinc-900/80 backdrop-blur border-zinc-800 mt-8">
+          <div className="text-center mb-6">
+            <p className="text-sm text-gray-400">
               Track {currentTrackIndex + 1} of {tracks.length}
             </p>
           </div>
@@ -557,20 +559,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               <img
                 src={currentTrack.albumCover || "/placeholder.svg"}
                 alt={currentTrack.name}
-                className="w-48 h-48 rounded-lg shadow-lg"
+                className="w-48 h-48 rounded-lg shadow-[0_0_40px_rgba(32,215,96,0.3)]"
               />
             )}
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Correct Answer</p>
-              <h3 className="text-2xl font-bold">{currentTrack.name}</h3>
-              <p className="text-xl text-emerald-600 font-semibold mt-1">by {currentTrack.artists.join(", ")}</p>
+              <p className="text-sm text-gray-400 mb-1">Correct Answer</p>
+              <h3 className="text-2xl font-bold text-white">{currentTrack.name}</h3>
+              <p className="text-xl text-[#20d760] font-semibold mt-1">by {currentTrack.artists.join(", ")}</p>
             </div>
           </div>
 
           {isHost ? (
             <div className="space-y-4 mb-6">
-              <h4 className="font-semibold text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
+              <h4 className="font-semibold text-lg flex items-center gap-2 text-white">
+                <Users className="w-5 h-5 text-[#20d760]" />
                 Player Answers
               </h4>
               <div className="space-y-2">
@@ -582,30 +584,30 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                       key={index}
                       className={`p-4 rounded-lg ${
                         isCorrect
-                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500"
-                          : "bg-red-50 dark:bg-red-950/30 border-2 border-red-500"
+                          ? "bg-[#20d760]/10 border-2 border-[#20d760]"
+                          : "bg-[#fc4839]/10 border-2 border-[#fc4839]"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                              isCorrect ? "bg-emerald-600" : "bg-red-600"
+                              isCorrect ? "bg-[#20d760]" : "bg-[#fc4839]"
                             }`}
                           >
                             {player[0]?.toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-semibold">{player}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-semibold text-white">{player}</p>
+                            <p className="text-sm text-gray-400">
                               Answered: <span className="font-medium">{playerAnswer || "No answer"}</span>
                             </p>
                           </div>
                         </div>
                         {isCorrect ? (
-                          <CheckCircle className="w-6 h-6 text-emerald-600" />
+                          <CheckCircle className="w-6 h-6 text-[#20d760]" />
                         ) : (
-                          <XCircle className="w-6 h-6 text-red-600" />
+                          <XCircle className="w-6 h-6 text-[#fc4839]" />
                         )}
                       </div>
                     </div>
@@ -618,21 +620,21 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               <div
                 className={`p-6 rounded-lg text-center ${
                   isMyAnswerCorrect
-                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500"
-                    : "bg-red-50 dark:bg-red-950/30 border-2 border-red-500"
+                    ? "bg-[#20d760]/10 border-2 border-[#20d760]"
+                    : "bg-[#fc4839]/10 border-2 border-[#fc4839]"
                 }`}
               >
                 {isMyAnswerCorrect ? (
                   <>
-                    <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto mb-3" />
-                    <h3 className="text-2xl font-bold text-emerald-700 mb-2">Correct!</h3>
-                    <p className="text-muted-foreground">You guessed: {myAnswer}</p>
+                    <CheckCircle className="w-16 h-16 text-[#20d760] mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-[#20d760] mb-2">Correct!</h3>
+                    <p className="text-gray-400">You guessed: {myAnswer}</p>
                   </>
                 ) : (
                   <>
-                    <XCircle className="w-16 h-16 text-red-600 mx-auto mb-3" />
-                    <h3 className="text-2xl font-bold text-red-700 mb-2">Wrong Answer</h3>
-                    <p className="text-muted-foreground">You guessed: {myAnswer}</p>
+                    <XCircle className="w-16 h-16 text-[#fc4839] mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-[#fc4839] mb-2">Wrong Answer</h3>
+                    <p className="text-gray-400">You guessed: {myAnswer}</p>
                   </>
                 )}
               </div>
@@ -644,7 +646,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               <Button
                 onClick={currentTrackIndex >= tracks.length - 1 ? completeQuiz : nextTrack}
                 size="lg"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
               >
                 {currentTrackIndex >= tracks.length - 1 ? "Show Final Results" : "Next Track"}
               </Button>
@@ -652,7 +654,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                 onClick={finishGame}
                 variant="outline"
                 size="lg"
-                className="w-full mt-2 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 bg-transparent"
+                className="w-full mt-2 border-[#fc4839] text-[#fc4839] hover:bg-[#fc4839]/10 bg-transparent"
               >
                 Finish Game
               </Button>
@@ -660,9 +662,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           )}
 
           {!isHost && (
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Waiting for host to continue...</p>
+            <div className="text-center p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+              <Clock className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">Waiting for host to continue...</p>
             </div>
           )}
         </Card>
@@ -671,16 +673,16 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-6xl mx-auto py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="text-white">
-            <p className="text-sm opacity-80">Party Code</p>
-            <p className="text-2xl font-bold">{partyCode}</p>
+            <p className="text-sm text-gray-400">Party Code</p>
+            <p className="text-2xl font-bold text-[#20d760]">{partyCode}</p>
           </div>
           <div className="text-right text-white">
-            <p className="text-sm opacity-80">Score</p>
-            <p className="text-2xl font-bold">
+            <p className="text-sm text-gray-400">Score</p>
+            <p className="text-2xl font-bold text-[#20d760]">
               {score} / {currentTrackIndex}
             </p>
           </div>
@@ -688,22 +690,22 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="p-8 bg-background/95 backdrop-blur">
+            <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
               <div className="text-center mb-4">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${isHost ? "bg-[#20d760] text-black" : "bg-zinc-800 text-gray-300"}`}
                 >
                   {isHost ? "🎵 Host (Controls Music)" : "👥 Player"}
                 </span>
               </div>
 
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-2">
                   <Music className="w-4 h-4" />
                   Track {currentTrackIndex + 1} of {tracks.length}
                 </div>
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center mx-auto mb-6">
-                  <Music className="w-16 h-16 text-white" />
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#20d760] to-[#01fffe] flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(32,215,96,0.6)]">
+                  <Music className="w-16 h-16 text-black" />
                 </div>
               </div>
 
@@ -714,13 +716,18 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                       <Button
                         onClick={playTrack}
                         size="lg"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                        className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold gap-2 shadow-[0_0_20px_rgba(32,215,96,0.5)]"
                       >
                         <Play className="w-5 h-5" />
                         Play 10 Seconds
                       </Button>
                     ) : (
-                      <Button onClick={pauseTrack} size="lg" variant="outline" className="gap-2 bg-transparent">
+                      <Button
+                        onClick={pauseTrack}
+                        size="lg"
+                        variant="outline"
+                        className="gap-2 bg-transparent border-zinc-700 text-gray-300 hover:bg-zinc-800"
+                      >
                         <Pause className="w-5 h-5" />
                         Pause
                       </Button>
@@ -728,7 +735,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                   </div>
 
                   {!isHost && !tracks[currentTrackIndex].previewUrl && (
-                    <p className="text-center text-sm text-muted-foreground">
+                    <p className="text-center text-sm text-gray-400">
                       ⚠️ This track doesn't have a preview. Listen from the host's device!
                     </p>
                   )}
@@ -736,7 +743,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                   {!isHost && (
                     <>
                       <div className="space-y-3">
-                        <label className="text-sm font-medium">Who is the artist?</label>
+                        <label className="text-sm font-medium text-gray-300">Who is the artist?</label>
                         <div className="grid grid-cols-2 gap-3">
                           {tracks[currentTrackIndex]?.answerOptions?.map((artist, index) => (
                             <Button
@@ -744,7 +751,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                               onClick={() => submitGuess(artist)}
                               variant="outline"
                               size="lg"
-                              className="h-auto py-4 text-base font-medium hover:bg-emerald-50 hover:border-emerald-600 hover:text-emerald-700"
+                              className="h-auto py-4 text-base font-medium bg-zinc-800/50 border-zinc-700 text-white hover:bg-[#20d760]/20 hover:border-[#20d760] hover:text-[#20d760]"
                             >
                               {artist}
                             </Button>
@@ -757,10 +764,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               ) : (
                 <div className="space-y-6 text-center">
                   {!isHost && answerSubmitted ? (
-                    <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
-                      <Clock className="w-12 h-12 text-blue-500 mx-auto mb-3 animate-pulse" />
-                      <p className="text-lg font-semibold mb-2">Answer Submitted!</p>
-                      <p className="text-sm text-muted-foreground">Waiting for host to finish the round...</p>
+                    <div className="p-6 rounded-lg bg-[#01fffe]/10 border-2 border-[#01fffe]">
+                      <Clock className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
+                      <p className="text-lg font-semibold mb-2 text-white">Answer Submitted!</p>
+                      <p className="text-sm text-gray-400">Waiting for host to finish the round...</p>
                     </div>
                   ) : null}
                 </div>
@@ -770,10 +777,10 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
           {isHost && (
             <div className="lg:col-span-1">
-              <Card className="p-6 bg-background/95 backdrop-blur">
+              <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
                 <div className="flex items-center gap-2 mb-4">
-                  <Users className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-semibold text-lg">Player Status</h3>
+                  <Users className="w-5 h-5 text-[#20d760]" />
+                  <h3 className="font-semibold text-lg text-white">Player Status</h3>
                 </div>
                 <div className="space-y-2">
                   {getPlayerList().map((player, index) => {
@@ -782,23 +789,25 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                       <div
                         key={index}
                         className={`flex items-center justify-between p-3 rounded-lg ${
-                          hasAnswered ? "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500" : "bg-muted"
+                          hasAnswered
+                            ? "bg-[#20d760]/10 border border-[#20d760]"
+                            : "bg-zinc-800/50 border border-zinc-700"
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                              hasAnswered ? "bg-emerald-600" : "bg-gray-400"
+                              hasAnswered ? "bg-[#20d760]" : "bg-gray-600"
                             }`}
                           >
                             {player[0]?.toUpperCase()}
                           </div>
-                          <span className="font-medium text-sm">{player}</span>
+                          <span className="font-medium text-sm text-white">{player}</span>
                         </div>
                         {hasAnswered ? (
-                          <CheckCircle className="w-5 h-5 text-emerald-600" />
+                          <CheckCircle className="w-5 h-5 text-[#20d760]" />
                         ) : (
-                          <Clock className="w-5 h-5 text-gray-400" />
+                          <Clock className="w-5 h-5 text-gray-500" />
                         )}
                       </div>
                     )
@@ -809,11 +818,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                   <Button
                     onClick={finishRound}
                     size="lg"
-                    className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full mt-4 bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
                   >
                     Finish Round
                   </Button>
                 )}
+
+                <Button
+                  onClick={finishGame}
+                  variant="outline"
+                  size="lg"
+                  className="w-full mt-2 border-[#fc4839] text-[#fc4839] hover:bg-[#fc4839]/10 bg-transparent"
+                >
+                  Finish Game
+                </Button>
               </Card>
             </div>
           )}
