@@ -8,18 +8,23 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session?.accessToken) {
+      console.error("[v0] No session or access token")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { code } = await request.json()
 
     console.log("[v0] Starting quiz for party:", code)
+    console.log("[v0] Session access token exists:", !!session.accessToken)
 
     const party = await getParty(code)
 
     if (!party) {
+      console.error("[v0] Party not found for code:", code)
       return NextResponse.json({ error: "Party not found" }, { status: 404 })
     }
+
+    console.log("[v0] Party found, playlistId:", party.playlistId)
 
     const response = await fetch(`https://api.spotify.com/v1/playlists/${party.playlistId}/tracks`, {
       headers: {
@@ -27,12 +32,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    console.log("[v0] Spotify API response status:", response.status)
+
     if (!response.ok) {
-      console.error("[v0] Failed to fetch playlist tracks:", response.status)
-      return NextResponse.json({ error: "Failed to fetch tracks" }, { status: 500 })
+      const errorText = await response.text()
+      console.error("[v0] Failed to fetch playlist tracks:", response.status, errorText)
+      return NextResponse.json({ error: "Failed to fetch tracks from Spotify", details: errorText }, { status: 500 })
     }
 
     const data = await response.json()
+    console.log("[v0] Raw Spotify data items count:", data.items?.length)
 
     const validTracks = data.items
       .map((item: any) => ({
@@ -45,7 +54,15 @@ export async function POST(request: NextRequest) {
       .sort(() => Math.random() - 0.5)
       .slice(0, 10)
 
-    console.log("[v0] Fetched and randomized", validTracks.length, "tracks")
+    console.log("[v0] Valid tracks with preview URLs:", validTracks.length)
+
+    if (validTracks.length === 0) {
+      console.error("[v0] No tracks with preview URLs found in playlist")
+      return NextResponse.json(
+        { error: "No tracks with preview URLs found in this playlist. Try a different playlist." },
+        { status: 400 },
+      )
+    }
 
     const updatedParty = await updateParty(code, {
       ...party,
@@ -54,9 +71,15 @@ export async function POST(request: NextRequest) {
       currentTrack: 0,
     })
 
+    console.log("[v0] Party updated successfully with", validTracks.length, "tracks")
+    console.log("[v0] Updated party status:", updatedParty?.status)
+
     return NextResponse.json({ success: true, party: updatedParty })
   } catch (error) {
     console.error("[v0] Error starting quiz:", error)
-    return NextResponse.json({ error: "Failed to start quiz" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to start quiz", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    )
   }
 }
