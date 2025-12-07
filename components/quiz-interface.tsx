@@ -90,17 +90,24 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
             setIsWaiting(false)
           }
 
-          if (!isHost && party.currentTrack !== undefined && party.currentTrack !== currentTrackIndex) {
-            setCurrentTrackIndex(party.currentTrack)
-            setGuess("")
-            setHasGuessed(false)
-            setAnswer(null)
-            setAnswerSubmitted(false)
+          // Only reset input when track actually changes to a NEW track
+          if (!isHost && party.currentTrack !== undefined) {
+            setCurrentTrackIndex((prevIndex) => {
+              if (party.currentTrack !== prevIndex) {
+                // Track changed - reset the form
+                setGuess("")
+                setHasGuessed(false)
+                setAnswer(null)
+                setAnswerSubmitted(false)
+                return party.currentTrack
+              }
+              return prevIndex
+            })
           }
 
           // Check if all members have answered
           const players = getPlayerList()
-          const answeredPlayers = Object.keys(partyData?.currentTrackAnswers || {})
+          const answeredPlayers = Object.keys(party?.currentTrackAnswers || {})
           setAllMembersAnswered(answeredPlayers.length === players.length)
         }
       } catch (error) {
@@ -119,7 +126,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     const interval = setInterval(fetchPartyData, 2000)
 
     return () => clearInterval(interval)
-  }, [partyCode, session])
+  }, [partyCode, session, isHost])
 
   const playTrack = async () => {
     if (!partyData?.tracks[currentTrackIndex]) return
