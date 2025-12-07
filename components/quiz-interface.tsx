@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Music, Play, Pause, Users, Trophy, CheckCircle, Clock, XCircle } from "lucide-react"
+import { Disc3, PlayCircle, PauseCircle, UserRound, Award, CircleCheckBig, Timer, CircleX } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 interface Track {
@@ -362,6 +362,20 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
     }
   }
 
+  const resetQuiz = async () => {
+    if (!isHost) return
+
+    try {
+      await fetch("/api/party/reset-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: partyCode }),
+      })
+    } catch (error) {
+      console.error("[v0] Error resetting quiz:", error)
+    }
+  }
+
   const getPlayerList = () => {
     const players: string[] = []
     if (partyData?.players) {
@@ -416,7 +430,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
         <Card className="w-full max-w-2xl p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#f89dcf] via-[#fc4839] to-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(252,72,57,0.5)]">
-              <Trophy className="w-10 h-10 text-white" />
+              <Award className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl font-bold mb-2 text-white">Quiz Complete!</h2>
             <p className="text-gray-400">{partyData.tracks.length} tracks • Final Results</p>
@@ -469,7 +483,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               className="w-full bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold shadow-[0_0_20px_rgba(32,215,96,0.5)]"
               size="lg"
             >
-              <Music className="w-4 h-4 mr-2" />
+              <Disc3 className="w-4 h-4 mr-2" />
               Start New Quiz
             </Button>
           )}
@@ -485,7 +499,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           <Card className="p-8 bg-zinc-900/80 backdrop-blur border-zinc-800">
             <div className="text-center">
               <div className="w-20 h-20 rounded-full bg-[#20d760] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(32,215,96,0.6)]">
-                <Users className="w-10 h-10 text-black" />
+                <UserRound className="w-10 h-10 text-black" />
               </div>
               <h1 className="text-3xl font-bold mb-2 text-white">Waiting Room</h1>
               <p className="text-gray-400 mb-6">
@@ -582,7 +596,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           {isHost ? (
             <div className="space-y-4 mb-6">
               <h4 className="font-semibold text-lg flex items-center gap-2 text-white">
-                <Users className="w-5 h-5 text-[#20d760]" />
+                <UserRound className="w-5 h-5 text-[#20d760]" />
                 Player Answers
               </h4>
               <div className="space-y-2">
@@ -615,9 +629,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                           </div>
                         </div>
                         {isCorrect ? (
-                          <CheckCircle className="w-6 h-6 text-[#20d760]" />
+                          <CircleCheckBig className="w-6 h-6 text-[#20d760]" />
                         ) : (
-                          <XCircle className="w-6 h-6 text-[#fc4839]" />
+                          <CircleX className="w-6 h-6 text-[#fc4839]" />
                         )}
                       </div>
                     </div>
@@ -636,13 +650,13 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
               >
                 {isMyAnswerCorrect ? (
                   <>
-                    <CheckCircle className="w-16 h-16 text-[#20d760] mx-auto mb-3" />
+                    <CircleCheckBig className="w-16 h-16 text-[#20d760] mx-auto mb-3" />
                     <h3 className="text-2xl font-bold text-[#20d760] mb-2">Correct!</h3>
                     <p className="text-gray-400">You guessed: {myAnswer}</p>
                   </>
                 ) : (
                   <>
-                    <XCircle className="w-16 h-16 text-[#fc4839] mx-auto mb-3" />
+                    <CircleX className="w-16 h-16 text-[#fc4839] mx-auto mb-3" />
                     <h3 className="text-2xl font-bold text-[#fc4839] mb-2">Wrong Answer</h3>
                     <p className="text-gray-400">You guessed: {myAnswer}</p>
                   </>
@@ -673,7 +687,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
           {!isHost && (
             <div className="text-center p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-              <Clock className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+              <Timer className="w-8 h-8 text-gray-500 mx-auto mb-2" />
               <p className="text-sm text-gray-400">Waiting for host to continue...</p>
             </div>
           )}
@@ -710,11 +724,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-2">
-                    <Music className="w-4 h-4" />
+                    <Disc3 className="w-4 h-4" />
                     Track {currentTrackIndex + 1} of {tracks.length}
                   </div>
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#20d760] to-[#01fffe] flex items-center justify-center mx-auto mb-6">
-                    <Music className="w-16 h-16 text-black" />
+                    <Disc3 className="w-16 h-16 text-black" />
                   </div>
                 </div>
 
@@ -725,9 +739,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                         <Button
                           onClick={playTrack}
                           size="lg"
-                          className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold gap-2 shadow-[0_0_20px_rgba(32,215,96,0.5)]"
+                          className="gap-2 bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold"
                         >
-                          <Play className="w-5 h-5" />
+                          <PlayCircle className="w-5 h-5" />
                           Play 10 Seconds
                         </Button>
                       ) : (
@@ -737,7 +751,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                           variant="outline"
                           className="gap-2 bg-transparent border-zinc-700 text-gray-300 hover:bg-zinc-800"
                         >
-                          <Pause className="w-5 h-5" />
+                          <PauseCircle className="w-5 h-5" />
                           Pause
                         </Button>
                       )}
@@ -747,7 +761,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                   <div className="space-y-6 text-center">
                     {!isHost && answerSubmitted ? (
                       <div className="p-6 rounded-lg bg-[#01fffe]/10 border-2 border-[#01fffe]">
-                        <Clock className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
+                        <Timer className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
                         <p className="text-lg font-semibold mb-2 text-white">Answer Submitted!</p>
                         <p className="text-sm text-gray-400">Waiting for host to finish the round...</p>
                       </div>
@@ -760,7 +774,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
             <div className="lg:col-span-1">
               <Card className="p-6 bg-zinc-900/80 backdrop-blur border-zinc-800">
                 <div className="flex items-center gap-2 mb-4">
-                  <Users className="w-5 h-5 text-[#20d760]" />
+                  <UserRound className="w-5 h-5 text-[#20d760]" />
                   <h3 className="font-semibold text-lg text-white">Player Status</h3>
                 </div>
                 <div className="space-y-2">
@@ -786,9 +800,9 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                           <span className="font-medium text-sm text-white">{player}</span>
                         </div>
                         {hasAnswered ? (
-                          <CheckCircle className="w-5 h-5 text-[#20d760]" />
+                          <CircleCheckBig className="w-5 h-5 text-[#20d760]" />
                         ) : (
-                          <Clock className="w-5 h-5 text-gray-500" />
+                          <Timer className="w-5 h-5 text-gray-500" />
                         )}
                       </div>
                     )
@@ -827,11 +841,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <Music className="w-4 h-4" />
+                  <Disc3 className="w-4 h-4" />
                   Track {currentTrackIndex + 1} of {tracks.length}
                 </div>
                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#20d760] to-[#01fffe] flex items-center justify-center mx-auto mb-6">
-                  <Music className="w-16 h-16 text-black" />
+                  <Disc3 className="w-16 h-16 text-black" />
                 </div>
               </div>
 
@@ -858,7 +872,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
                 <div className="space-y-6 text-center">
                   {answerSubmitted && (
                     <div className="p-6 rounded-lg bg-[#01fffe]/10 border-2 border-[#01fffe]">
-                      <Clock className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
+                      <Timer className="w-12 h-12 text-[#01fffe] mx-auto mb-3 animate-pulse" />
                       <p className="text-lg font-semibold mb-2 text-white">Answer Submitted!</p>
                       <p className="text-sm text-gray-400">Waiting for host to finish the round...</p>
                     </div>
