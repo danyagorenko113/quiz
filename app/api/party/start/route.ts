@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
         uri: item.track.uri,
         previewUrl: item.track.preview_url,
         albumCover: item.track.album?.images?.[0]?.url || null,
+        durationMs: item.track.duration_ms, // Store track duration in milliseconds for random playback
       }))
       .sort(() => Math.random() - 0.5)
       .slice(0, 10)
