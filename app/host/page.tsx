@@ -9,5 +9,5 @@ export default async function HostPage() {
     redirect("/api/auth/login?returnTo=/host")
   }
 
-  return <HostDashboard session={session} />
+  return <HostDashboard session={{ user: session.user }} />
 }
