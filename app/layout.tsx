@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { UserProvider } from "@auth0/nextjs-auth0/client"
 import { Providers } from "@/components/providers"
 import { Footer } from "@/components/footer"
 import "./globals.css"
@@ -44,12 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-sans antialiased`}>
-        <UserProvider>
-          <div className="flex flex-col min-h-screen">
-            <Providers>{children}</Providers>
-            <Footer />
-          </div>
-        </UserProvider>
+        <div className="flex flex-col min-h-screen">
+          <Providers>{children}</Providers>
+          <Footer />
+        </div>
         <Analytics />
       </body>
     </html>
