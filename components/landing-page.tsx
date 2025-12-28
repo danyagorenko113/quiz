@@ -29,7 +29,7 @@ export function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-              <Link href="/auth">
+              <a href="/api/auth/login?returnTo=/spotify-setup">
                 <Button
                   size="lg"
                   className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-10"
@@ -37,7 +37,7 @@ export function LandingPage() {
                   Start Hosting
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-              </Link>
+              </a>
 
               <Link href="/join">
                 <Button
@@ -142,12 +142,12 @@ export function LandingPage() {
             Start your first quiz party in seconds. Invite your crew and see who knows music best.
           </p>
 
-          <Link href="/auth">
+          <a href="/api/auth/login?returnTo=/spotify-setup">
             <Button size="lg" className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-12">
               Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-          </Link>
+          </a>
         </Card>
       </div>
 
