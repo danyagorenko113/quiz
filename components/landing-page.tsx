@@ -1,17 +1,11 @@
 "use client"
 
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Disc3, Zap, Users, Trophy, ArrowRight, Music2 } from "lucide-react"
 import Link from "next/link"
-import type { Session } from "next-auth"
 
-interface LandingPageProps {
-  session: Session | null
-}
-
-export function LandingPage({ session }: LandingPageProps) {
+export function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
@@ -35,26 +29,15 @@ export function LandingPage({ session }: LandingPageProps) {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-              {session ? (
-                <Link href="/host">
-                  <Button
-                    size="lg"
-                    className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-10"
-                  >
-                    Start Hosting
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-              ) : (
+              <Link href="/auth">
                 <Button
-                  onClick={() => signIn("spotify", { callbackUrl: "/host" })}
                   size="lg"
                   className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-10"
                 >
-                  Login with Spotify
+                  Start Hosting
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-              )}
+              </Link>
 
               <Link href="/join">
                 <Button
@@ -154,33 +137,26 @@ export function LandingPage({ session }: LandingPageProps) {
       {/* CTA Section */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <Card className="p-12 bg-gradient-to-br from-[#20d760]/10 to-[#01fffe]/5 border-[#20d760]/20 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Test Your Music IQ?</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Play with Friends?</h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Start your first quiz party in seconds. No setup required.
+            Start your first quiz party in seconds. Invite your crew and see who knows music best.
           </p>
 
-          {session ? (
-            <Link href="/host">
-              <Button size="lg" className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-12">
-                Create Your Party
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              onClick={() => signIn("spotify", { callbackUrl: "/host" })}
-              size="lg"
-              className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-12"
-            >
+          <Link href="/auth">
+            <Button size="lg" className="bg-[#20d760] hover:bg-[#1ab34f] text-black font-semibold text-lg h-16 px-12">
               Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-          )}
+          </Link>
         </Card>
       </div>
 
       {/* Footer */}
-      
+      <div className="border-t border-zinc-800 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-gray-500 text-sm font-light">Made with❤️ by danyagorenko. 2025</p>
+        </div>
+      </div>
     </div>
   )
 }
