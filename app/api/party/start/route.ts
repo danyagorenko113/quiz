@@ -1,23 +1,35 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getParty, updateParty } from "@/lib/redis"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getSession } from "@auth0/nextjs-auth0"
 import { generateObject } from "ai"
 import { z } from "zod"
+import { kv } from "@vercel/kv"
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession()
 
-    if (!session?.accessToken) {
-      console.error("[v0] No session or access token")
+    if (!session?.user) {
+      console.error("[v0] No Auth0 session")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { code } = await request.json()
 
     console.log("[v0] Starting quiz for party:", code)
-    console.log("[v0] Session access token exists:", !!session.accessToken)
+    console.log("[v0] User:", session.user.sub)
+
+    const spotifyCredentials = await kv.get<{ clientId: string; clientSecret: string; accessToken?: string }>(
+      `spotify:${session.user.sub}`,
+    )
+
+    if (!spotifyCredentials?.accessToken) {
+      console.error("[v0] No Spotify credentials or access token found")
+      return NextResponse.json(
+        { error: "Spotify not connected. Please set up your Spotify app first." },
+        { status: 401 },
+      )
+    }
 
     const party = await getParty(code)
 
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(`https://api.spotify.com/v1/playlists/${party.playlistId}/tracks`, {
       headers: {
-        Authorization: `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${spotifyCredentials.accessToken}`,
       },
     })
 
