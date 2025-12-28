@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getParty, updateParty } from "@/lib/redis"
-import { getSession } from "@auth0/nextjs-auth0"
+import { getParty, updateParty, redis } from "@/lib/redis"
+import { getSession } from "@/lib/auth0"
 import { generateObject } from "ai"
 import { z } from "zod"
-import { kv } from "@vercel/kv"
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,9 +18,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Starting quiz for party:", code)
     console.log("[v0] User:", session.user.sub)
 
-    const spotifyCredentials = await kv.get<{ clientId: string; clientSecret: string; accessToken?: string }>(
-      `spotify:${session.user.sub}`,
-    )
+    const spotifyCredentials = await redis.get(`spotify:${session.user.sub}`)
 
     if (!spotifyCredentials?.accessToken) {
       console.error("[v0] No Spotify credentials or access token found")
