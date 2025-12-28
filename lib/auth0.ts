@@ -1,3 +1,3 @@
-import { getSession } from "@auth0/nextjs-auth0"
+import { getSession, handleAuth } from "@auth0/nextjs-auth0"
 
-export { getSession }
+export { getSession, handleAuth }
