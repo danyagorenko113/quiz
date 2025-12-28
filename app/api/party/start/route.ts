@@ -6,7 +6,8 @@ import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession()
+    const res = new NextResponse()
+    const session = await getSession(request, res)
 
     if (!session?.user) {
       console.error("[v0] No session or user")
