@@ -1,3 +1,5 @@
-import { handleAuth } from "@/lib/auth0"
+import { auth0 } from "@/lib/auth0"
 
-export const GET = handleAuth()
+const handler = auth0.handleAuth()
+
+export { handler as GET, handler as POST }
