@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server"
+import { auth0 } from "./lib/auth0"
 
 export async function proxy(request: NextRequest) {
-  // No middleware needed - Auth0 handles authentication via API routes
-  return
+  return await auth0.middleware(request)
 }
 
 export const config = {
