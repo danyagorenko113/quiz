@@ -1,15 +1,30 @@
 import { redirect } from "next/navigation"
-import { getSession } from "@auth0/nextjs-auth0"
+import { auth0 } from "@/lib/auth0"
 import { HostDashboard } from "@/components/host-dashboard"
-import { cookies } from "next/headers"
 
 export default async function HostPage() {
-  const cookieStore = await cookies()
-  const session = await getSession(cookieStore)
+  const session = await auth0.getSession()
 
   if (!session) {
-    redirect("/api/auth/login?returnTo=/host")
+    redirect("/auth/login?returnTo=/host")
   }
 
-  return <HostDashboard session={{ user: session.user }} />
+  // Get access token for API calls (for Spotify integration)
+  let accessToken: string | null = null
+  try {
+    const token = await auth0.getAccessToken()
+    accessToken = token?.accessToken || null
+  } catch (error) {
+    console.error("Error getting access token:", error)
+  }
+
+  // Create a compatible session object for the component
+  // The component expects next-auth Session type, but we'll provide compatible structure
+  const compatibleSession = {
+    user: session.user,
+    accessToken,
+    expires: session.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  }
+
+  return <HostDashboard session={compatibleSession as any} />
 }
