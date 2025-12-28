@@ -1,17 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Disc3, MoveRight } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function JoinPage() {
   const [partyCode, setPartyCode] = useState("")
   const [playerName, setPlayerName] = useState("")
   const [error, setError] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code")
+    if (codeFromUrl) {
+      setPartyCode(codeFromUrl.toUpperCase())
+    }
+  }, [searchParams])
 
   const handleJoin = async () => {
     if (!partyCode.trim()) {
@@ -64,7 +72,7 @@ export default function JoinPage() {
 
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold text-white">Join Quiz Party</h1>
-            <p className="text-gray-400">Enter the Party Code to start guessing</p>
+            <p className="text-gray-400">Enter the party code to start guessing</p>
           </div>
 
           <div className="w-full space-y-4">
