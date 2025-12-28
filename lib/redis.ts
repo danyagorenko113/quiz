@@ -36,6 +36,7 @@ export interface Track {
   answerOptions?: string[] // 6 options: 1 correct + 5 AI-generated similar artists
   uri?: string // Spotify URI for playback
   albumCover?: string
+  durationMs?: number // Added duration field to store track length in milliseconds
 }
 
 // Store party with 1 hour expiration
