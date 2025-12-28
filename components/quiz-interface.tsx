@@ -14,6 +14,7 @@ interface Track {
   previewUrl: string | null
   answerOptions?: string[]
   albumCover?: string
+  durationMs?: number
 }
 
 interface Player {
@@ -172,6 +173,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
     if (isHost && session?.accessToken && deviceId && track.uri) {
       try {
+        const trackDuration = track.durationMs || 180000 // Default to 3 minutes if not available
+        const minPosition = 10000 // Skip first 10 seconds
+        const maxPosition = trackDuration - 10000 // Skip last 10 seconds
+        const randomPosition = Math.floor(Math.random() * (maxPosition - minPosition) + minPosition)
+
         const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
           method: "PUT",
           headers: {
@@ -180,7 +186,7 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
           },
           body: JSON.stringify({
             uris: [track.uri],
-            position_ms: 0,
+            position_ms: randomPosition,
           }),
         })
 
@@ -209,7 +215,11 @@ export function QuizInterface({ partyCode }: { partyCode: string }) {
 
     if (!isHost && track.previewUrl && audioRef.current) {
       audioRef.current.src = track.previewUrl
-      audioRef.current.currentTime = 0
+      const previewDuration = 30000
+      const minPosition = 0 // Previews are already a clip, so we can use the whole thing
+      const maxPosition = Math.max(0, previewDuration - 10000) // Leave room for 10 seconds
+      const randomPosition = Math.floor(Math.random() * (maxPosition - minPosition) + minPosition)
+      audioRef.current.currentTime = randomPosition / 1000 // Convert to seconds for HTML audio
 
       try {
         await audioRef.current.play()
