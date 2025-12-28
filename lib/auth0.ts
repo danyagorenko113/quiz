@@ -1,3 +1,3 @@
-import { getSession, handleAuth } from "@auth0/nextjs-auth0/server"
+import { Auth0Client } from "@auth0/nextjs-auth0/server"
 
-export { getSession, handleAuth }
+export const auth0 = new Auth0Client()
