@@ -1,13 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getParty, updateParty, redis } from "@/lib/redis"
-import { getSession } from "@auth0/nextjs-auth0"
+import { auth0 } from "@/lib/auth0"
 import { generateObject } from "ai"
 import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
-    const res = new NextResponse()
-    const session = await getSession(request, res)
+    const session = await auth0.getSession()
 
     if (!session?.user) {
       console.error("[v0] No session or user")
