@@ -9,24 +9,22 @@ export async function POST(request: NextRequest) {
     const session = await getSession()
 
     if (!session?.user) {
-      console.error("[v0] No Auth0 session")
+      console.error("[v0] No session or user")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const userId = session.user.sub
+    const spotifyToken = await redis.get(`spotify_token:${userId}`)
+
+    if (!spotifyToken) {
+      console.error("[v0] No Spotify token found for user")
+      return NextResponse.json({ error: "Spotify not connected" }, { status: 401 })
     }
 
     const { code } = await request.json()
 
     console.log("[v0] Starting quiz for party:", code)
-    console.log("[v0] User:", session.user.sub)
-
-    const spotifyCredentials = await redis.get(`spotify:${session.user.sub}`)
-
-    if (!spotifyCredentials?.accessToken) {
-      console.error("[v0] No Spotify credentials or access token found")
-      return NextResponse.json(
-        { error: "Spotify not connected. Please set up your Spotify app first." },
-        { status: 401 },
-      )
-    }
+    console.log("[v0] User:", userId)
 
     const party = await getParty(code)
 
@@ -39,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(`https://api.spotify.com/v1/playlists/${party.playlistId}/tracks`, {
       headers: {
-        Authorization: `Bearer ${spotifyCredentials.accessToken}`,
+        Authorization: `Bearer ${spotifyToken}`,
       },
     })
 
