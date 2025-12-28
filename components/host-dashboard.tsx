@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Disc3, UserRound, PlayCircle, LogOut } from "lucide-react"
 import { signOut } from "next-auth/react"
+import { QRCodeSVG } from "qrcode.react"
 
 interface Playlist {
   id: string
@@ -213,6 +214,8 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
 
   const canStart = players.length >= 1
 
+  const joinUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/join?code=${partyCode}`
+
   return (
     <div className="min-h-screen bg-black p-4">
       <div className="max-w-2xl mx-auto py-8">
@@ -239,6 +242,12 @@ function PartyLobby({ partyCode, session }: { partyCode: string; session: Sessio
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2">Players join at: {window.location.origin}/join</p>
+          </div>
+
+          <div className="bg-white rounded-lg p-6 mb-6 flex flex-col items-center">
+            <p className="text-sm text-gray-600 mb-3 font-medium">Scan to Join</p>
+            <QRCodeSVG value={joinUrl} size={180} level="H" includeMargin={true} />
+            <p className="text-xs text-gray-500 mt-3">Scan with your phone camera</p>
           </div>
 
           <div className="mb-6">
