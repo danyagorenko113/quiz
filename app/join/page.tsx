@@ -64,7 +64,7 @@ export default function JoinPage() {
 
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold text-white">Join Quiz Party</h1>
-            <p className="text-gray-400">Enter the party code to start guessing</p>
+            <p className="text-gray-400">Enter the Party Code to start guessing</p>
           </div>
 
           <div className="w-full space-y-4">
