@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Providers } from "@/components/providers"
 import { Footer } from "@/components/footer"
 import "./globals.css"
+import { Auth0Provider } from "@auth0/nextjs-auth0/client"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -43,10 +44,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-sans antialiased`}>
-        <div className="flex flex-col min-h-screen">
-          <Providers>{children}</Providers>
-          <Footer />
-        </div>
+        <Auth0Provider>
+          <div className="flex flex-col min-h-screen">
+            <Providers>{children}</Providers>
+            <Footer />
+          </div>
+        </Auth0Provider>
         <Analytics />
       </body>
     </html>
