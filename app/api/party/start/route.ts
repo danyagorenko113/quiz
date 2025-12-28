@@ -3,11 +3,12 @@ import { getParty, updateParty, redis } from "@/lib/redis"
 import { getSession } from "@/lib/auth0"
 import { generateObject } from "ai"
 import { z } from "zod"
+import { cookies } from "next/headers"
 
 export async function POST(request: NextRequest) {
   try {
-    const res = new NextResponse()
-    const session = await getSession(request, res)
+    const cookieStore = await cookies()
+    const session = await getSession(cookieStore)
 
     if (!session?.user) {
       console.error("[v0] No session or user")
