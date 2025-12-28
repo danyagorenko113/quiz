@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getSession } from "@auth0/nextjs-auth0"
+import { getSession } from "@/lib/auth0"
 import { HostDashboard } from "@/components/host-dashboard"
 
 export default async function HostPage() {
